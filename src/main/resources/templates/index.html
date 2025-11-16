@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Sistema de Gestión de Tareas</title>
+</head>
+<body>
+<h1>Sistema de Gestión de Tareas</h1>
+
+<section>
+    <h2>Añadir tarea</h2>
+    <form th:action="@{/agregar}" th:object="${tareaNueva}" method="post">
+        <label>Título: <input th:field="*{titulo}" required/></label><br/>
+        <label>Descripción: <input th:field="*{descripcion}" /></label><br/>
+        <label>Prioridad:
+            <select th:field="*{prioridad}">
+                <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p}"></option>
+            </select>
+        </label><br/>
+        <button type="submit">Agregar</button>
+    </form>
+</section>
+
+<section>
+    <h2>Lista de Tareas</h2>
+    <table border="1">
+        <tr><th>ID</th><th>Título</th><th>Prioridad</th><th>Estado</th><th>Acciones</th></tr>
+        <tr th:each="t : ${tareas}">
+            <td th:text="${t.id}">ID</td>
+            <td th:text="${t.titulo}">Titulo</td>
+            <td th:text="${t.prioridad}">Prioridad</td>
+            <td th:text="${t.estado}">Estado</td>
+            <td>
+                <form th:action="@{/encolar/{id}(id=${t.id})}" method="post" style="display:inline">
+                    <button type="submit">Encolar</button>
+                </form>
+                <form th:action="@{/completar/{id}(id=${t.id})}" method="post" style="display:inline">
+                    <button type="submit">Completar</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+</section>
+
+<section>
+    <h2>Cola de procesamiento (frente)</h2>
+    <div th:if="${colaFrente != null}">
+        <p th:text="${'Siguiente en cola: ' + colaFrente.titulo + ' (ID: ' + colaFrente.id + ')'}"></p>
+    </div>
+    <form th:action="@{/desencolar}" method="post">
+        <button type="submit">Procesar (desencolar)</button>
+    </form>
+</section>
+
+<section>
+    <h2>Historial (última completada)</h2>
+    <div th:if="${ultimaCompletada != null}">
+        <p th:text="${ultimaCompletada.titulo + ' (ID: ' + ultimaCompletada.id + ')'}"></p>
+    </div>
+</section>
+
+</body>
+</html>
