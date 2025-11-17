@@ -3,9 +3,6 @@ package com.example.integradoravirna.modelo;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Modelo que representa una tarea.
- */
 public class Tarea {
     private static final AtomicLong GENERADOR_ID = new AtomicLong(1);
 
@@ -29,7 +26,6 @@ public class Tarea {
         this.prioridad = prioridad;
     }
 
-    // Getters y setters
     public Long getId() { return id; }
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }

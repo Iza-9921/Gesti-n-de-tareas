@@ -1,8 +1,8 @@
 package com.example.integradoravirna.estructuras;
 
-/**
- * Pila simple (LIFO).
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class Pila<T> {
     private Object[] datos;
     private int tope;
@@ -37,4 +37,13 @@ public class Pila<T> {
 
     public boolean estaVacia() { return tope == 0; }
     public int tamaño() { return tope; }
+
+    @SuppressWarnings("unchecked")
+    public List<T> comoLista() {
+        List<T> lista = new ArrayList<>();
+        for (int i = tope - 1; i >= 0; i--) {
+            lista.add((T) datos[i]);
+        }
+        return lista;
+    }
 }

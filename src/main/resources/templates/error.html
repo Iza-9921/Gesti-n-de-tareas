@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Error — Sistema de Tareas</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" href="/css/estilos.css"/>
+    <style>
+        .error-card { max-width:900px; margin:48px auto; padding:24px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.04); color:#e6eef8; }
+        pre.stack { white-space:pre-wrap; background: rgba(0,0,0,0.32); padding:12px; border-radius:8px; overflow:auto; max-height:400px; color:#ffd6d6; font-size:13px; }
+    </style>
+</head>
+<body>
+<div class="error-card">
+    <h1>Ocurrió un error inesperado</h1>
+    <p class="muted">Ruta: <strong th:text="${path}">/</strong></p>
+    <p class="muted">Hora: <strong th:text="${timestamp}">-</strong></p>
+
+    <h3>Mensaje</h3>
+    <p th:text="${message}">Error desconocido</p>
+
+    <h3>Detalles (stacktrace)</h3>
+    <pre class="stack" th:text="${stacktrace}">stacktrace</pre>
+
+    <div style="margin-top:16px;">
+        <a th:href="@{/}" class="btn btn-primary">Volver al inicio</a>
+    </div>
+</div>
+</body>
+</html>

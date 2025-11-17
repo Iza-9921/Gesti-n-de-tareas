@@ -2,9 +2,6 @@ package com.example.integradoravirna.estructuras;
 
 import java.util.Arrays;
 
-/**
- * Lista dinámica basada en arreglo (genérica).
- */
 public class MiListaArreglo<T> {
     private Object[] datos;
     private int size;
@@ -20,6 +17,7 @@ public class MiListaArreglo<T> {
     }
 
     public boolean eliminar(T elemento) {
+        if (elemento == null) return false;
         for (int i = 0; i < size; i++) {
             if (datos[i].equals(elemento)) {
                 int mov = size - i - 1;
@@ -38,10 +36,11 @@ public class MiListaArreglo<T> {
     }
 
     public int tamaño() { return size; }
-
     public boolean estaVacia() { return size == 0; }
 
+    @SuppressWarnings("unchecked")
     public boolean contiene(T elemento) {
+        if (elemento == null) return false;
         for (int i = 0; i < size; i++) if (datos[i].equals(elemento)) return true;
         return false;
     }

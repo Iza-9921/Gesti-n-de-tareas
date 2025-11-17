@@ -4,6 +4,7 @@ import com.example.integradoravirna.estructuras.Cola;
 import com.example.integradoravirna.estructuras.MiListaArreglo;
 import com.example.integradoravirna.estructuras.Pila;
 import com.example.integradoravirna.modelo.Estado;
+import com.example.integradoravirna.modelo.Historial;
 import com.example.integradoravirna.modelo.Prioridad;
 import com.example.integradoravirna.modelo.Tarea;
 import org.springframework.stereotype.Service;
@@ -12,26 +13,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Servicio en memoria que usa las estructuras propias.
- */
 @Service
 public class ServicioTareas {
 
     private final MiListaArreglo<Tarea> repositorio = new MiListaArreglo<>();
-    private final Pila<Tarea> historial = new Pila<>();
+    private final Pila<Historial> historial = new Pila<>();
     private final Cola<Tarea> colaProcesamiento = new Cola<>();
 
-    public ServicioTareas() {
-        // datos de ejemplo
-        repositorio.agregar(new Tarea("Ejemplo 1", "Primera tarea", Prioridad.MEDIA));
-        repositorio.agregar(new Tarea("Ejemplo 2", "Segunda tarea", Prioridad.ALTA));
-    }
+    public ServicioTareas() { }
 
-    // LISTA (repositorio)
+    // Repositorio
     public void agregarTarea(Tarea tarea) { repositorio.agregar(tarea); }
 
-    public boolean eliminarTarea(Tarea tarea) { return repositorio.eliminar(tarea); }
+    public boolean eliminarPorId(long id) {
+        Optional<Tarea> opt = buscarPorId(id);
+        if (opt.isPresent()) {
+            Tarea t = opt.get();
+            boolean ok = repositorio.eliminar(t);
+            colaProcesamiento.removeIf(e -> e.getId().equals(id));
+            return ok;
+        }
+        return false;
+    }
 
     public List<Tarea> obtenerTodas() {
         List<Tarea> salida = new ArrayList<>();
@@ -47,24 +50,55 @@ public class ServicioTareas {
         return Optional.empty();
     }
 
-    // PILA (historial)
-    public void registrarHistorial(Tarea tarea) { historial.apilar(tarea); }
-    public Tarea obtenerUltimaCompletada() { return historial.verTope(); }
+    // Historial
+    public void agregarAHistorial(Historial h) { historial.apilar(h); }
+    public List<Historial> obtenerHistorialComoLista() { return historial.comoLista(); }
 
-    // COLA (procesamiento)
+    // Cola
     public void encolarTarea(Tarea tarea) { colaProcesamiento.encolar(tarea); }
     public Tarea desencolarTarea() { return colaProcesamiento.desencolar(); }
     public Tarea verFrenteCola() { return colaProcesamiento.verFrente(); }
+    public List<Tarea> obtenerColaComoLista() { return colaProcesamiento.comoLista(); }
+    public int tamañoCola() { return colaProcesamiento.tamaño(); }
 
-    // Acción: marcar completada
+    // Marcar completada
     public boolean marcarComoCompletada(long id) {
         Optional<Tarea> opt = buscarPorId(id);
         if (opt.isPresent()) {
             Tarea t = opt.get();
             t.setEstado(Estado.COMPLETADA);
-            registrarHistorial(t);
+            agregarAHistorial(new Historial(
+                    t.getTitulo(),
+                    t.getDescripcion(),
+                    "COMPLETADA",
+                    java.time.LocalDateTime.now()
+            ));
             return true;
         }
         return false;
+    }
+
+    // Procesar frente
+    public boolean procesarFrente() {
+        Tarea frente = desencolarTarea();
+        if (frente == null) return false;
+        frente.setEstado(Estado.COMPLETADA);
+        agregarAHistorial(new Historial(
+                frente.getTitulo(),
+                frente.getDescripcion(),
+                "PROCESADA",
+                java.time.LocalDateTime.now()
+        ));
+        return true;
+    }
+
+    // Filtra tareas por prioridad
+    public List<Tarea> obtenerPorPrioridad(Prioridad prioridad) {
+        List<Tarea> salida = new ArrayList<>();
+        for (int i = 0; i < repositorio.tamaño(); i++) {
+            Tarea t = repositorio.obtener(i);
+            if (t.getPrioridad() == prioridad) salida.add(t);
+        }
+        return salida;
     }
 }

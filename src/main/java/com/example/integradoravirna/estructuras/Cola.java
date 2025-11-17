@@ -1,5 +1,9 @@
 package com.example.integradoravirna.estructuras;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+
 public class Cola<T> {
     private Object[] datos;
     private int inicio;
@@ -47,5 +51,29 @@ public class Cola<T> {
         datos = nuevo;
         inicio = 0;
         fin = size;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<T> comoLista() {
+        List<T> lista = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            lista.add((T) datos[(inicio + i) % datos.length]);
+        }
+        return lista;
+    }
+
+    public void removeIf(Predicate<T> predicate) {
+        List<T> lista = comoLista();
+        Cola<T> nueva = new Cola<>();
+        for (T e : lista) {
+            if (!predicate.test(e)) {
+                nueva.encolar(e);
+            }
+        }
+        // reemplazar internals con nueva
+        this.datos = nueva.datos;
+        this.inicio = nueva.inicio;
+        this.fin = nueva.fin;
+        this.size = nueva.size;
     }
 }
