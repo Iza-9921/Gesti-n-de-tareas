@@ -7,6 +7,7 @@ import com.example.integradoravirna.servicio.ServicioTareas;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -49,8 +50,9 @@ public class controladorTareas {
     }
 
     @PostMapping("/agregar")
-    public String agregar(@ModelAttribute Tarea tarea) {
-        servicio.agregarTarea(tarea);
+    public String agregar(@ModelAttribute Tarea tarea, RedirectAttributes redirectAttrs) {
+        String mensaje = servicio.agregarTarea(tarea); // ahora devuelve String
+        redirectAttrs.addFlashAttribute("mensajeConfirmacion", mensaje);
         return "redirect:/";
     }
 

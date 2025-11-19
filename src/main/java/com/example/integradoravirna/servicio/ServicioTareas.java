@@ -22,8 +22,20 @@ public class ServicioTareas {
 
     public ServicioTareas() { }
 
-    // Repositorio
-    public void agregarTarea(Tarea tarea) { repositorio.agregar(tarea); }
+
+  //Metodo agregar tarea
+    public String agregarTarea(Tarea tarea) {
+        repositorio.agregar(tarea);
+        colaProcesamiento.encolar(tarea);
+
+        agregarAHistorial(new Historial(
+                tarea.getTitulo(),
+                tarea.getDescripcion(),
+                "CREADA",
+                java.time.LocalDateTime.now()
+        ));
+        return "Tarea creada y encolada correctamente";
+    }
 
     public boolean eliminarPorId(long id) {
         Optional<Tarea> opt = buscarPorId(id);
@@ -67,12 +79,15 @@ public class ServicioTareas {
         if (opt.isPresent()) {
             Tarea t = opt.get();
             t.setEstado(Estado.COMPLETADA);
+            colaProcesamiento.removeIf(e -> e.getId().equals(id));
+
             agregarAHistorial(new Historial(
                     t.getTitulo(),
                     t.getDescripcion(),
                     "COMPLETADA",
                     java.time.LocalDateTime.now()
             ));
+
             return true;
         }
         return false;
