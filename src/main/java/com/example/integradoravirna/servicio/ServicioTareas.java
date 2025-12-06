@@ -1,14 +1,10 @@
 package com.example.integradoravirna.servicio;
 
-import com.example.integradoravirna.estructuras.Cola;
-import com.example.integradoravirna.estructuras.MiListaArreglo;
-import com.example.integradoravirna.estructuras.Pila;
-import com.example.integradoravirna.modelo.Estado;
-import com.example.integradoravirna.modelo.Historial;
-import com.example.integradoravirna.modelo.Prioridad;
-import com.example.integradoravirna.modelo.Tarea;
+import com.example.integradoravirna.estructuras.*;
+import com.example.integradoravirna.modelo.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,20 +16,26 @@ public class ServicioTareas {
     private final Pila<Historial> historial = new Pila<>();
     private final Cola<Tarea> colaProcesamiento = new Cola<>();
 
-    public ServicioTareas() { }
+    private final ArbolBinarioBusqueda<Tarea> arbolPrioridades = new ArbolBinarioBusqueda<>();
 
+    public ServicioTareas() {}
 
-  //Metodo agregar tarea
+    public void limpiarHistorial() {
+        historial.vaciar();
+    }
+
     public String agregarTarea(Tarea tarea) {
         repositorio.agregar(tarea);
         colaProcesamiento.encolar(tarea);
+        arbolPrioridades.insertar(tarea);
 
         agregarAHistorial(new Historial(
                 tarea.getTitulo(),
                 tarea.getDescripcion(),
                 "CREADA",
-                java.time.LocalDateTime.now()
+                LocalDateTime.now()
         ));
+
         return "Tarea creada y encolada correctamente";
     }
 
@@ -42,7 +44,10 @@ public class ServicioTareas {
         if (opt.isPresent()) {
             Tarea t = opt.get();
             boolean ok = repositorio.eliminar(t);
+
             colaProcesamiento.removeIf(e -> e.getId().equals(id));
+            arbolPrioridades.eliminar(t);
+
             return ok;
         }
         return false;
@@ -50,7 +55,8 @@ public class ServicioTareas {
 
     public List<Tarea> obtenerTodas() {
         List<Tarea> salida = new ArrayList<>();
-        for (int i = 0; i < repositorio.tamaño(); i++) salida.add(repositorio.obtener(i));
+        for (int i = 0; i < repositorio.tamaño(); i++)
+            salida.add(repositorio.obtener(i));
         return salida;
     }
 
@@ -62,30 +68,28 @@ public class ServicioTareas {
         return Optional.empty();
     }
 
-    // Historial
     public void agregarAHistorial(Historial h) { historial.apilar(h); }
     public List<Historial> obtenerHistorialComoLista() { return historial.comoLista(); }
 
-    // Cola
     public void encolarTarea(Tarea tarea) { colaProcesamiento.encolar(tarea); }
     public Tarea desencolarTarea() { return colaProcesamiento.desencolar(); }
     public Tarea verFrenteCola() { return colaProcesamiento.verFrente(); }
     public List<Tarea> obtenerColaComoLista() { return colaProcesamiento.comoLista(); }
     public int tamañoCola() { return colaProcesamiento.tamaño(); }
 
-    // Marcar completada
     public boolean marcarComoCompletada(long id) {
         Optional<Tarea> opt = buscarPorId(id);
         if (opt.isPresent()) {
             Tarea t = opt.get();
             t.setEstado(Estado.COMPLETADA);
+
             colaProcesamiento.removeIf(e -> e.getId().equals(id));
 
             agregarAHistorial(new Historial(
                     t.getTitulo(),
                     t.getDescripcion(),
                     "COMPLETADA",
-                    java.time.LocalDateTime.now()
+                    LocalDateTime.now()
             ));
 
             return true;
@@ -93,27 +97,33 @@ public class ServicioTareas {
         return false;
     }
 
-    // Procesar frente
     public boolean procesarFrente() {
         Tarea frente = desencolarTarea();
         if (frente == null) return false;
+
         frente.setEstado(Estado.COMPLETADA);
+
         agregarAHistorial(new Historial(
                 frente.getTitulo(),
                 frente.getDescripcion(),
                 "PROCESADA",
-                java.time.LocalDateTime.now()
+                LocalDateTime.now()
         ));
+
         return true;
     }
 
-    // Filtra tareas por prioridad
     public List<Tarea> obtenerPorPrioridad(Prioridad prioridad) {
         List<Tarea> salida = new ArrayList<>();
         for (int i = 0; i < repositorio.tamaño(); i++) {
             Tarea t = repositorio.obtener(i);
-            if (t.getPrioridad() == prioridad) salida.add(t);
+            if (t.getPrioridad() == prioridad)
+                salida.add(t);
         }
         return salida;
+    }
+
+    public List<Tarea> obtenerTareasOrdenadas() {
+        return arbolPrioridades.obtenerEnOrden();
     }
 }

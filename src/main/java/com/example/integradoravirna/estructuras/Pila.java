@@ -35,8 +35,13 @@ public class Pila<T> {
         return (T) datos[tope - 1];
     }
 
-    public boolean estaVacia() { return tope == 0; }
-    public int tamaño() { return tope; }
+    public boolean estaVacia() {
+        return tope == 0;
+    }
+
+    public int tamaño() {
+        return tope;
+    }
 
     @SuppressWarnings("unchecked")
     public List<T> comoLista() {
@@ -45,5 +50,12 @@ public class Pila<T> {
             lista.add((T) datos[i]);
         }
         return lista;
+    }
+
+    public void vaciar() {
+        for (int i = 0; i < tope; i++) {
+            datos[i] = null;
+        }
+        tope = 0;
     }
 }

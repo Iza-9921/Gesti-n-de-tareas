@@ -25,23 +25,16 @@ public class controladorTareas {
 
     @GetMapping
     public String inicio(Model modelo) {
-        List<Tarea> tareasAlta = servicio.obtenerPorPrioridad(Prioridad.ALTA);
-        List<Tarea> tareasMedia = servicio.obtenerPorPrioridad(Prioridad.MEDIA);
-        List<Tarea> tareasBaja = servicio.obtenerPorPrioridad(Prioridad.BAJA);
+        modelo.addAttribute("tareasAlta", servicio.obtenerPorPrioridad(Prioridad.ALTA));
+        modelo.addAttribute("tareasMedia", servicio.obtenerPorPrioridad(Prioridad.MEDIA));
+        modelo.addAttribute("tareasBaja", servicio.obtenerPorPrioridad(Prioridad.BAJA));
 
-        List<Tarea> cola = servicio.obtenerColaComoLista();
-        List<Historial> historial = servicio.obtenerHistorialComoLista();
-
-        modelo.addAttribute("tareasAlta", tareasAlta);
-        modelo.addAttribute("tareasMedia", tareasMedia);
-        modelo.addAttribute("tareasBaja", tareasBaja);
-
-        modelo.addAttribute("colaTareas", (cola != null) ? cola : Collections.emptyList());
-        modelo.addAttribute("pilaHistorial", (historial != null) ? historial : Collections.emptyList());
+        modelo.addAttribute("colaTareas", servicio.obtenerColaComoLista());
+        modelo.addAttribute("pilaHistorial", servicio.obtenerHistorialComoLista());
         modelo.addAttribute("totalEnCola", servicio.tamañoCola());
 
         Tarea frente = servicio.verFrenteCola();
-        modelo.addAttribute("siguienteEnCola", (frente != null && frente.getTitulo() != null) ? frente.getTitulo() : "—");
+        modelo.addAttribute("siguienteEnCola", (frente != null) ? frente.getTitulo() : "—");
 
         modelo.addAttribute("prioridades", Prioridad.values());
         modelo.addAttribute("tareaNueva", new Tarea());
@@ -51,31 +44,35 @@ public class controladorTareas {
 
     @PostMapping("/agregar")
     public String agregar(@ModelAttribute Tarea tarea, RedirectAttributes redirectAttrs) {
-        String mensaje = servicio.agregarTarea(tarea); // ahora devuelve String
+        String mensaje = servicio.agregarTarea(tarea);
         redirectAttrs.addFlashAttribute("mensajeConfirmacion", mensaje);
         return "redirect:/";
     }
 
     @PostMapping("/encolar/{id}")
-    public String encolar(@PathVariable("id") long id) {
+    public String encolar(@PathVariable long id, RedirectAttributes redirectAttrs) {
         servicio.buscarPorId(id).ifPresent(servicio::encolarTarea);
+        redirectAttrs.addFlashAttribute("mensajeConfirmacion", "Tarea encolada");
         return "redirect:/";
     }
 
     @PostMapping("/desencolar")
-    public String desencolar() {
+    public String desencolar(RedirectAttributes redirectAttrs) {
         servicio.desencolarTarea();
+        redirectAttrs.addFlashAttribute("mensajeConfirmacion", "Tarea quitada de la cola");
         return "redirect:/";
     }
 
     @PostMapping("/completar/{id}")
-    public String completar(@PathVariable("id") long id) {
-        servicio.marcarComoCompletada(id);
+    public String completar(@PathVariable long id, RedirectAttributes redirectAttrs) {
+        boolean ok = servicio.marcarComoCompletada(id);
+        redirectAttrs.addFlashAttribute(ok ? "mensajeConfirmacion" : "error",
+                ok ? "Tarea completada" : "No se encontró la tarea");
         return "redirect:/";
     }
 
     @PostMapping("/eliminar/{id}")
-    public String eliminar(@PathVariable("id") long id) {
+    public String eliminar(@PathVariable long id, RedirectAttributes redirectAttrs) {
         servicio.buscarPorId(id).ifPresent(t -> {
             servicio.agregarAHistorial(new Historial(
                     t.getTitulo(),
@@ -85,16 +82,28 @@ public class controladorTareas {
             ));
             servicio.eliminarPorId(id);
         });
+        redirectAttrs.addFlashAttribute("mensajeConfirmacion", "Tarea eliminada");
         return "redirect:/";
     }
 
     @PostMapping("/procesar")
-    public String procesar() {
-        servicio.procesarFrente();
+    public String procesar(RedirectAttributes redirectAttrs) {
+        boolean ok = servicio.procesarFrente();
+        redirectAttrs.addFlashAttribute(ok ? "mensajeConfirmacion" : "error",
+                ok ? "Tarea procesada" : "No hay tareas");
         return "redirect:/";
     }
 
-    @GetMapping("/favicon.ico")
-    @ResponseBody
-    public void disableFavicon() { }
+    @GetMapping("/ordenadas")
+    public String mostrarOrdenadas(Model model) {
+        model.addAttribute("tareasOrdenadas", servicio.obtenerTareasOrdenadas());
+        return "tareas_ordenadas";
+    }
+
+    @PostMapping("/limpiarHistorial")
+    public String limpiarHistorial(RedirectAttributes redirectAttrs) {
+        servicio.limpiarHistorial();
+        redirectAttrs.addFlashAttribute("mensajeConfirmacion", "Historial limpiado correctamente");
+        return "redirect:/";
+    }
 }
