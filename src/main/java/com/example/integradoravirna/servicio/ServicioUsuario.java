@@ -43,11 +43,20 @@ public class ServicioUsuario {
     }
 
     public Usuario registrarUsuario(Usuario usuario) {
-        // Encriptar la contraseña antes de registrar
+
+        if (buscarPorEmail(usuario.getEmail()) != null) {
+            throw new IllegalArgumentException("El email ya está registrado");
+        }
+
         String passwordEncriptada = passwordEncoder.encode(usuario.getPassword());
         usuario.setPassword(passwordEncriptada);
-        return registrarUsuario(usuario.getNombre(), usuario.getEmail(),
-                usuario.getTelefono(), usuario.getPassword());
+
+        usuarios.add(usuario);
+
+        System.out.println("✅ Usuario nuevo guardado: " + usuario.getEmail());
+        System.out.println("🔐 Hash: " + passwordEncriptada);
+
+        return usuario;
     }
 
     public Usuario buscarPorEmail(String email) {

@@ -1,0 +1,33 @@
+2025-12-09T00:36:41.095-06:00  INFO 7612 --- [IntegradoraVirna] [main] c.e.i.IntegradoraVirnaApplicationTests   : Starting IntegradoraVirnaApplicationTests using Java 21.0.8 with PID 7612 (started by LENOVO in C:\Users\LENOVO\OneDrive\Escritorio\Gesti-n-de-tareas)
+2025-12-09T00:36:41.096-06:00 DEBUG 7612 --- [IntegradoraVirna] [main] c.e.i.IntegradoraVirnaApplicationTests   : Running with Spring Boot v3.5.7, Spring v6.2.12
+2025-12-09T00:36:41.097-06:00  INFO 7612 --- [IntegradoraVirna] [main] c.e.i.IntegradoraVirnaApplicationTests   : No active profile set, falling back to 1 default profile: "default"
+2025-12-09T00:36:42.836-06:00  INFO 7612 --- [IntegradoraVirna] [main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2025-12-09T00:36:43.047-06:00  INFO 7612 --- [IntegradoraVirna] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name servicioAutenticacion
+2025-12-09T00:36:43.623-06:00  INFO 7612 --- [IntegradoraVirna] [main] c.e.i.IntegradoraVirnaApplicationTests   : Started IntegradoraVirnaApplicationTests in 3.0 seconds (process running for 4.64)
+2025-12-09T00:37:06.655-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] c.e.i.IntegradoraVirnaApplication        : Starting IntegradoraVirnaApplication using Java 21.0.8 with PID 8732 (C:\Users\LENOVO\OneDrive\Escritorio\Gesti-n-de-tareas\target\classes started by LENOVO in C:\Users\LENOVO\OneDrive\Escritorio\Gesti-n-de-tareas)
+2025-12-09T00:37:06.658-06:00 DEBUG 8732 --- [IntegradoraVirna] [restartedMain] c.e.i.IntegradoraVirnaApplication        : Running with Spring Boot v3.5.7, Spring v6.2.12
+2025-12-09T00:37:06.673-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] c.e.i.IntegradoraVirnaApplication        : No active profile set, falling back to 1 default profile: "default"
+2025-12-09T00:37:06.738-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-12-09T00:37:06.738-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-12-09T00:37:07.849-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-12-09T00:37:07.869-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-09T00:37:07.870-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.48]
+2025-12-09T00:37:07.914-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-09T00:37:07.915-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1175 ms
+2025-12-09T00:37:08.303-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2025-12-09T00:37:08.444-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name servicioAutenticacion
+2025-12-09T00:37:08.729-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-12-09T00:37:08.769-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-12-09T00:37:08.777-06:00  INFO 8732 --- [IntegradoraVirna] [restartedMain] c.e.i.IntegradoraVirnaApplication        : Started IntegradoraVirnaApplication in 2.625 seconds (process running for 3.053)
+2025-12-09T00:37:43.582-06:00  INFO 8732 --- [IntegradoraVirna] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-12-09T00:37:43.584-06:00  INFO 8732 --- [IntegradoraVirna] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-12-09T00:37:43.588-06:00  INFO 8732 --- [IntegradoraVirna] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2025-12-09T00:38:16.540-06:00  WARN 8732 --- [IntegradoraVirna] [http-nio-8080-exec-5] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico.]
+2025-12-09T00:50:57.632-06:00  INFO 8732 --- [IntegradoraVirna] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2025-12-09T00:50:57.641-06:00  INFO 8732 --- [IntegradoraVirna] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2025-12-09T00:51:10.953-06:00  INFO 3996 --- [IntegradoraVirna] [main] c.e.i.IntegradoraVirnaApplicationTests   : Starting IntegradoraVirnaApplicationTests using Java 21.0.8 with PID 3996 (started by LENOVO in C:\Users\LENOVO\OneDrive\Escritorio\Gesti-n-de-tareas)
+2025-12-09T00:51:10.954-06:00 DEBUG 3996 --- [IntegradoraVirna] [main] c.e.i.IntegradoraVirnaApplicationTests   : Running with Spring Boot v3.5.7, Spring v6.2.12
+2025-12-09T00:51:10.955-06:00  INFO 3996 --- [IntegradoraVirna] [main] c.e.i.IntegradoraVirnaApplicationTests   : No active profile set, falling back to 1 default profile: "default"
+2025-12-09T00:51:12.350-06:00  INFO 3996 --- [IntegradoraVirna] [main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2025-12-09T00:51:12.536-06:00  INFO 3996 --- [IntegradoraVirna] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name servicioAutenticacion
+2025-12-09T00:51:12.973-06:00  INFO 3996 --- [IntegradoraVirna] [main] c.e.i.IntegradoraVirnaApplicationTests   : Started IntegradoraVirnaApplicationTests in 2.409 seconds (process running for 3.585)

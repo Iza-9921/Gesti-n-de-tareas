@@ -1,6 +1,7 @@
 package com.example.integradoravirna.servicio;
 
 import com.example.integradoravirna.modelo.Usuario;
+import com.example.integradoravirna.servicio.ServicioUsuario;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,25 +19,15 @@ public class ServicioAutenticacion implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        System.out.println("🔍 Buscando usuario: " + email);
 
         Usuario usuario = servicioUsuario.buscarPorEmail(email);
 
-        if (usuario == null) {
-            System.out.println("❌ Usuario no encontrado: " + email);
-            throw new UsernameNotFoundException("Usuario no encontrado: " + email);
+        if (usuario == null || !usuario.isActivo()) {
+            throw new UsernameNotFoundException("Usuario inválido");
         }
-
-        if (!usuario.isActivo()) {
-            System.out.println("❌ Usuario desactivado: " + email);
-            throw new UsernameNotFoundException("Usuario desactivado: " + email);
-        }
-
-        System.out.println("✅ Usuario encontrado: " + email);
-        System.out.println("   Contraseña en BD: " + usuario.getPassword());
 
         return User.withUsername(usuario.getEmail())
-                .password(usuario.getPassword())
+                .password(usuario.getPassword())   // BCrypt hash
                 .authorities("USER")
                 .build();
     }
