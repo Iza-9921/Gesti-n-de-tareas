@@ -280,4 +280,28 @@ public class controladorTareas {
     public String health() {
         return "✅ APLICACIÓN FUNCIONANDO - " + java.time.LocalDateTime.now();
     }
+    // En controladorTareas.java
+    @GetMapping("/ordenadas-alfabetico")
+    public String ordenadasAlfabetico(Model model) {
+        Long usuarioId = getUsuarioIdAutenticado();
+        if (usuarioId == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("tareasOrdenadas", servicioTareas.obtenerTareasOrdenadasAlfabeticamente(usuarioId));
+        model.addAttribute("usuario", getUsuarioAutenticado());
+        model.addAttribute("orden", "Alfabético");
+        return "tareas_ordenadas"; // Puedes reusar el mismo template
+    }
+    @GetMapping("/arbol")
+    public String mostrarArbol(Model model) {
+        Long usuarioId = getUsuarioIdAutenticado();
+        if (usuarioId == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("visualizacionArbol", servicioTareas.obtenerVisualizacionArbol(usuarioId));
+        model.addAttribute("usuario", getUsuarioAutenticado());
+        return "arbol_visualizacion";
+    }
 }

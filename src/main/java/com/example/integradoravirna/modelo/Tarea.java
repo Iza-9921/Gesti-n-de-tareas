@@ -1,6 +1,7 @@
 package com.example.integradoravirna.modelo;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Tarea implements Comparable<Tarea> {
@@ -29,11 +30,33 @@ public class Tarea implements Comparable<Tarea> {
         this.usuarioId = usuarioId;
     }
 
+    // En Tarea.java, asegúrate que compareTo funcione bien para el árbol
     @Override
     public int compareTo(Tarea otra) {
-        int comp = this.prioridad.ordinal() - otra.prioridad.ordinal();
-        if (comp != 0) return comp;
+        // Comparar por título primero (para el árbol alfabético)
+        int compTitulo = this.titulo.compareToIgnoreCase(otra.titulo);
+        if (compTitulo != 0) return compTitulo;
+
+        // Si títulos iguales, comparar por prioridad
+        int compPrioridad = this.prioridad.ordinal() - otra.prioridad.ordinal();
+        if (compPrioridad != 0) return compPrioridad;
+
+        // Si todo igual, comparar por ID
         return this.id.compareTo(otra.id);
+    }
+
+    // También necesitas equals y hashCode consistentes
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Tarea tarea = (Tarea) obj;
+        return Objects.equals(id, tarea.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     // Getters y Setters
