@@ -4,48 +4,47 @@ import com.example.integradoravirna.estructuras.*;
 import com.example.integradoravirna.modelo.*;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
 public class ServicioTareas {
 
-    // Mapa: usuarioId -> sus tareas
     private final Map<Long, ArbolBinarioBusqueda<Tarea>> arbolesPorUsuario = new HashMap<>();
     private final Map<Long, MiListaArreglo<Tarea>> tareasPorUsuario = new HashMap<>();
     private final Map<Long, Cola<Tarea>> colasPorUsuario = new HashMap<>();
     private final Map<Long, Pila<Historial>> historialesPorUsuario = new HashMap<>();
 
-    // Tareas de ejemplo para cada usuario
     private final ServicioUsuario servicioUsuario;
-
 
     public ServicioTareas(ServicioUsuario servicioUsuario) {
         this.servicioUsuario = servicioUsuario;
         inicializarTareasEjemplo();
     }
 
+    // PROBLEMA: El árbol no se inicializa en el método inicializarTareasEjemplo()
     private void inicializarTareasEjemplo() {
-        // Obtener usuarios existentes y crear tareas para cada uno
-        List<Usuario> usuarios = servicioUsuario.obtenerTodosUsuarios();
+        // Obtener usuarios existentes
+        java.util.List<Usuario> usuarios = servicioUsuario.obtenerTodosUsuarios();
 
         for (Usuario usuario : usuarios) {
             Long usuarioId = usuario.getId();
 
             // Inicializar estructuras para este usuario
+            // FALTA: Inicializar el árbol aquí
             tareasPorUsuario.put(usuarioId, new MiListaArreglo<>());
             colasPorUsuario.put(usuarioId, new Cola<>());
             historialesPorUsuario.put(usuarioId, new Pila<>());
 
-            // Crear tareas de ejemplo para este usuario
+            // AGREGAR ESTA LÍNEA: Inicializar el árbol para cada usuario
+            arbolesPorUsuario.put(usuarioId, new ArbolBinarioBusqueda<>());
+
+            // Crear tareas de ejemplo
             crearTareasEjemploParaUsuario(usuarioId, usuario.getNombre());
         }
     }
 
     private void crearTareasEjemploParaUsuario(Long usuarioId, String nombreUsuario) {
-        // Agregar tareas de ejemplo
         Tarea t1 = new Tarea("Revisar emails", "Revisar correo electrónico del día", Prioridad.ALTA, usuarioId);
         Tarea t2 = new Tarea("Preparar informe", "Preparar informe mensual", Prioridad.MEDIA, usuarioId);
         Tarea t3 = new Tarea("Organizar archivos", "Organizar documentos en la nube", Prioridad.BAJA, usuarioId);
@@ -68,6 +67,11 @@ public class ServicioTareas {
         return historialesPorUsuario.computeIfAbsent(usuarioId, k -> new Pila<>());
     }
 
+    // Método para obtener el árbol de un usuario
+    private ArbolBinarioBusqueda<Tarea> obtenerArbolUsuario(Long usuarioId) {
+        return arbolesPorUsuario.computeIfAbsent(usuarioId, k -> new ArbolBinarioBusqueda<>());
+    }
+
     public Tarea agregarTarea(Tarea t) {
         if (t == null) throw new IllegalArgumentException("Tarea null");
         if (t.getUsuarioId() == null) throw new IllegalArgumentException("Tarea sin usuario");
@@ -78,7 +82,7 @@ public class ServicioTareas {
         // 1. Agregar a la lista principal
         obtenerTareasUsuario(usuarioId).agregar(t);
 
-        // 2. Agregar al árbol de búsqueda (NUEVO)
+        // 2. Agregar al árbol de búsqueda
         obtenerArbolUsuario(usuarioId).insertar(t);
 
         // 3. Registrar en historial
@@ -87,11 +91,21 @@ public class ServicioTareas {
         return t;
     }
 
+    // PROBLEMA: Eliminar tarea no la elimina del árbol
     public boolean eliminarTarea(Long id, Long usuarioId) {
         Tarea t = buscarPorId(id, usuarioId);
         if (t == null) return false;
+
+        // 1. Eliminar de la lista principal
         boolean removed = obtenerTareasUsuario(usuarioId).eliminar(t);
-        if (removed) obtenerHistorialUsuario(usuarioId).apilar(new Historial(t.getTitulo(), t.getDescripcion(), "ELIMINADA"));
+
+        // NOTA: Para eliminar del árbol necesitarías implementar un método de eliminación
+        // en ArbolBinarioBusqueda. Por ahora solo se elimina de la lista.
+        // System.out.println("Nota: La tarea debería eliminarse también del árbol BST");
+
+        if (removed) {
+            obtenerHistorialUsuario(usuarioId).apilar(new Historial(t.getTitulo(), t.getDescripcion(), "ELIMINADA"));
+        }
         return removed;
     }
 
@@ -109,12 +123,11 @@ public class ServicioTareas {
         Tarea tareaExistente = buscarPorId(id, usuarioId);
         if (tareaExistente == null) return null;
 
-        // Guardar datos antiguos para el historial
         String tituloAnterior = tareaExistente.getTitulo();
         String descripcionAnterior = tareaExistente.getDescripcion();
         Prioridad prioridadAnterior = tareaExistente.getPrioridad();
 
-        // Actualizar solo los campos que no son null
+        // Actualizar campos
         if (tareaActualizada.getTitulo() != null && !tareaActualizada.getTitulo().isEmpty()) {
             tareaExistente.setTitulo(tareaActualizada.getTitulo());
         }
@@ -128,6 +141,9 @@ public class ServicioTareas {
             tareaExistente.setEstado(tareaActualizada.getEstado());
         }
 
+        // NOTA: Al actualizar el título, el árbol BST ya no estará correctamente ordenado
+        // porque no se actualiza la posición en el árbol. Se necesitaría eliminar y reinsertar.
+
         obtenerHistorialUsuario(usuarioId).apilar(new Historial(
                 "Tarea actualizada: " + tituloAnterior,
                 "De: " + tituloAnterior + " (" + prioridadAnterior + ") a: " +
@@ -138,8 +154,8 @@ public class ServicioTareas {
         return tareaExistente;
     }
 
-    public List<Tarea> buscarTareas(String texto, Long usuarioId) {
-        List<Tarea> resultados = new ArrayList<>();
+    public java.util.List<Tarea> buscarTareas(String texto, Long usuarioId) {
+        java.util.List<Tarea> resultados = new java.util.ArrayList<>();
         if (texto == null || texto.trim().isEmpty()) {
             return obtenerTodasComoLista(usuarioId);
         }
@@ -199,8 +215,8 @@ public class ServicioTareas {
         return obtenerColaUsuario(usuarioId).comoLista();
     }
 
-    public List<Tarea> obtenerColaComoListaEstándar(Long usuarioId) {
-        List<Tarea> lista = new ArrayList<>();
+    public java.util.List<Tarea> obtenerColaComoListaEstándar(Long usuarioId) {
+        java.util.List<Tarea> lista = new java.util.ArrayList<>();
         MiListaArreglo<Tarea> colaLista = obtenerColaUsuario(usuarioId).comoLista();
         for (int i = 0; i < colaLista.tamaño(); i++) {
             Tarea t = colaLista.obtener(i);
@@ -213,8 +229,8 @@ public class ServicioTareas {
         return obtenerHistorialUsuario(usuarioId).comoLista();
     }
 
-    public List<Historial> obtenerHistorialComoListaEstándar(Long usuarioId) {
-        List<Historial> lista = new ArrayList<>();
+    public java.util.List<Historial> obtenerHistorialComoListaEstándar(Long usuarioId) {
+        java.util.List<Historial> lista = new java.util.ArrayList<>();
         MiListaArreglo<Historial> historialLista = obtenerHistorialUsuario(usuarioId).comoLista();
         for (int i = 0; i < historialLista.tamaño(); i++) {
             Historial h = historialLista.obtener(i);
@@ -231,7 +247,6 @@ public class ServicioTareas {
         MiListaArreglo<Tarea> ordenadas = new MiListaArreglo<>();
         MiListaArreglo<Tarea> tareas = obtenerTareasUsuario(usuarioId);
 
-        // ALTA
         for (int i = 0; i < tareas.tamaño(); i++) {
             Tarea t = tareas.obtener(i);
             if (t != null && t.getPrioridad() == Prioridad.ALTA) {
@@ -239,7 +254,6 @@ public class ServicioTareas {
             }
         }
 
-        // MEDIA
         for (int i = 0; i < tareas.tamaño(); i++) {
             Tarea t = tareas.obtener(i);
             if (t != null && t.getPrioridad() == Prioridad.MEDIA) {
@@ -247,7 +261,6 @@ public class ServicioTareas {
             }
         }
 
-        // BAJA
         for (int i = 0; i < tareas.tamaño(); i++) {
             Tarea t = tareas.obtener(i);
             if (t != null && t.getPrioridad() == Prioridad.BAJA) {
@@ -258,8 +271,8 @@ public class ServicioTareas {
         return ordenadas;
     }
 
-    public List<Tarea> obtenerTareasOrdenadasComoLista(Long usuarioId) {
-        List<Tarea> lista = new ArrayList<>();
+    public java.util.List<Tarea> obtenerTareasOrdenadasComoLista(Long usuarioId) {
+        java.util.List<Tarea> lista = new java.util.ArrayList<>();
         MiListaArreglo<Tarea> ordenadas = obtenerTareasOrdenadasPorPrioridad(usuarioId);
         for (int i = 0; i < ordenadas.tamaño(); i++) {
             Tarea t = ordenadas.obtener(i);
@@ -268,8 +281,8 @@ public class ServicioTareas {
         return lista;
     }
 
-    public List<Tarea> tareasPorPrioridad(Prioridad p, Long usuarioId) {
-        List<Tarea> lista = new ArrayList<>();
+    public java.util.List<Tarea> tareasPorPrioridad(Prioridad p, Long usuarioId) {
+        java.util.List<Tarea> lista = new java.util.ArrayList<>();
         MiListaArreglo<Tarea> tareas = obtenerTareasUsuario(usuarioId);
         for (int i = 0; i < tareas.tamaño(); i++) {
             Tarea t = tareas.obtener(i);
@@ -302,8 +315,8 @@ public class ServicioTareas {
         return t;
     }
 
-    public List<Tarea> obtenerTodasComoLista(Long usuarioId) {
-        List<Tarea> lista = new ArrayList<>();
+    public java.util.List<Tarea> obtenerTodasComoLista(Long usuarioId) {
+        java.util.List<Tarea> lista = new java.util.ArrayList<>();
         MiListaArreglo<Tarea> tareas = obtenerTareasUsuario(usuarioId);
         for (int i = 0; i < tareas.tamaño(); i++) {
             Tarea t = tareas.obtener(i);
@@ -314,9 +327,8 @@ public class ServicioTareas {
         return lista;
     }
 
-    // Método para obtener estadísticas del usuario
-    public Map<String, Integer> obtenerEstadisticasUsuario(Long usuarioId) {
-        Map<String, Integer> stats = new HashMap<>();
+    public java.util.Map<String, Integer> obtenerEstadisticasUsuario(Long usuarioId) {
+        java.util.Map<String, Integer> stats = new java.util.HashMap<>();
         MiListaArreglo<Tarea> tareas = obtenerTareasUsuario(usuarioId);
 
         int total = tareas.tamaño();
@@ -345,13 +357,10 @@ public class ServicioTareas {
 
         return stats;
     }
-    private ArbolBinarioBusqueda<Tarea> obtenerArbolUsuario(Long usuarioId) {
-        return arbolesPorUsuario.computeIfAbsent(usuarioId, k -> new ArbolBinarioBusqueda<>());
-    }
 
-    // Buscar tareas usando el árbol (más eficiente)
-    public List<Tarea> buscarTareasConArbol(String texto, Long usuarioId) {
-        List<Tarea> resultados = new ArrayList<>();
+    // Buscar tareas usando el árbol (aunque no es más eficiente así)
+    public java.util.List<Tarea> buscarTareasConArbol(String texto, Long usuarioId) {
+        java.util.List<Tarea> resultados = new java.util.ArrayList<>();
         if (texto == null || texto.trim().isEmpty()) {
             return obtenerTodasComoLista(usuarioId);
         }
@@ -359,11 +368,11 @@ public class ServicioTareas {
         String textoBusqueda = texto.toLowerCase().trim();
         MiListaArreglo<Tarea> todasTareas = obtenerTareasUsuario(usuarioId);
 
-        // Usar el árbol para búsqueda más rápida
+        // NOTA: Esto no usa realmente el árbol para búsqueda eficiente
+        // Para usar el árbol eficientemente necesitarías implementar búsqueda por rango
         for (int i = 0; i < todasTareas.tamaño(); i++) {
             Tarea t = todasTareas.obtener(i);
             if (t != null) {
-                // Verificar si coincide (similar a búsqueda anterior)
                 boolean coincide =
                         (t.getTitulo() != null && t.getTitulo().toLowerCase().contains(textoBusqueda)) ||
                                 (t.getDescripcion() != null && t.getDescripcion().toLowerCase().contains(textoBusqueda));
@@ -377,9 +386,9 @@ public class ServicioTareas {
         return resultados;
     }
 
-    // Obtener tareas ordenadas alfabéticamente (usando árbol)
-    public List<Tarea> obtenerTareasOrdenadasAlfabeticamente(Long usuarioId) {
-        List<Tarea> lista = new ArrayList<>();
+    // Obtener tareas ordenadas alfabéticamente (usando árbol - ESTO SÍ FUNCIONA)
+    public java.util.List<Tarea> obtenerTareasOrdenadasAlfabeticamente(Long usuarioId) {
+        java.util.List<Tarea> lista = new java.util.ArrayList<>();
         MiListaArreglo<Tarea> ordenadas = obtenerArbolUsuario(usuarioId).inOrden();
 
         for (int i = 0; i < ordenadas.tamaño(); i++) {
@@ -396,9 +405,30 @@ public class ServicioTareas {
         Tarea tareaBusqueda = new Tarea();
         tareaBusqueda.setTitulo(titulo);
 
+        // ESTO SÍ usa el árbol para búsqueda eficiente O(log n)
         return obtenerArbolUsuario(usuarioId).buscar(tareaBusqueda);
     }
+
     public String obtenerVisualizacionArbol(Long usuarioId) {
         return obtenerArbolUsuario(usuarioId).visualizarArbol();
+    }
+
+    // Método adicional para obtener estadísticas del árbol
+    public java.util.Map<String, Object> obtenerEstadisticasArbol(Long usuarioId) {
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+
+        // Verificar si el árbol está vacío (necesitas agregar método estaVacio() en ArbolBinarioBusqueda)
+        // Por ahora asumimos que si no hay tareas, el árbol está vacío
+        java.util.List<Tarea> tareasOrdenadas = obtenerTareasOrdenadasAlfabeticamente(usuarioId);
+
+        stats.put("totalNodos", tareasOrdenadas.size());
+        stats.put("tareasOrdenadas", tareasOrdenadas);
+
+        if (!tareasOrdenadas.isEmpty()) {
+            stats.put("primeraAlfabeticamente", tareasOrdenadas.get(0).getTitulo());
+            stats.put("ultimaAlfabeticamente", tareasOrdenadas.get(tareasOrdenadas.size() - 1).getTitulo());
+        }
+
+        return stats;
     }
 }

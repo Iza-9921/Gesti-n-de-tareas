@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Árbol de Tareas</title>
+    <style>
+        .arbol-texto {
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            background: #f8f9fa;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .tabla-tareas {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+<h1>🌳 Árbol Binario de Tareas</h1>
+<a href="/">← Volver al inicio</a>
+
+<h3>Estructura del Árbol (Visualización jerárquica):</h3>
+<div class="arbol-texto" th:text="${visualizacionArbol}">
+    <!-- Aquí se mostrará el árbol -->
+</div>
+
+<h3>Tareas en Orden Alfabético (Recorrido InOrden):</h3>
+<table class="tabla-tareas" border="1">
+    <thead>
+    <tr>
+        <th>Título</th>
+        <th>Descripción</th>
+        <th>Prioridad</th>
+        <th>Estado</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="tarea : ${tareasAlfabetico}">
+        <td th:text="${tarea.titulo}"></td>
+        <td th:text="${tarea.descripcion}"></td>
+        <td th:text="${tarea.prioridad}"></td>
+        <td th:text="${tarea.estado}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

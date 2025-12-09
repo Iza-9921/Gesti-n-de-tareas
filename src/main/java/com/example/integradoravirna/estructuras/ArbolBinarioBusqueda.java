@@ -56,9 +56,15 @@ public class ArbolBinarioBusqueda<T extends Comparable<T>> {
             inOrdenRec(nodo.getDerecho(), resultado);
         }
     }
+
     public String visualizarArbol() {
+        if (raiz == null) {
+            return "🌳 Árbol vacío - No hay tareas";
+        }
+
         StringBuilder sb = new StringBuilder();
-        sb.append("=== Árbol Binario de Tareas ===\n");
+        sb.append("🌳 ÁRBOL BINARIO DE BÚSQUEDA 🌳\n");
+        sb.append("═".repeat(40)).append("\n\n");
         visualizarRec(raiz, "", true, sb);
         return sb.toString();
     }
@@ -71,9 +77,27 @@ public class ArbolBinarioBusqueda<T extends Comparable<T>> {
 
             String nuevoPrefijo = prefijo + (esUltimo ? "    " : "│   ");
 
-            // Mostrar hijo derecho primero (para visualización vertical)
-            visualizarRec(nodo.getDerecho(), nuevoPrefijo, false, sb);
-            visualizarRec(nodo.getIzquierdo(), nuevoPrefijo, true, sb);
+            // Primero mostrar el hijo derecho (para mejor visualización)
+            if (nodo.getDerecho() != null || nodo.getIzquierdo() != null) {
+                if (nodo.getDerecho() != null) {
+                    visualizarRec(nodo.getDerecho(), nuevoPrefijo, false, sb);
+                } else {
+                    // Mostrar null si no hay hijo derecho
+                    sb.append(nuevoPrefijo).append("├── [NULL]\n");
+                }
+
+                if (nodo.getIzquierdo() != null) {
+                    visualizarRec(nodo.getIzquierdo(), nuevoPrefijo, true, sb);
+                } else {
+                    // Mostrar null si no hay hijo izquierdo
+                    sb.append(nuevoPrefijo).append("└── [NULL]\n");
+                }
+            }
         }
+    }
+
+    // Método adicional para ver si el árbol está vacío
+    public boolean estaVacio() {
+        return raiz == null;
     }
 }
