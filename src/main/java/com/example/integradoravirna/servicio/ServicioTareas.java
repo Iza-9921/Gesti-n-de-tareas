@@ -398,4 +398,7 @@ public class ServicioTareas {
 
         return obtenerArbolUsuario(usuarioId).buscar(tareaBusqueda);
     }
+    public String obtenerVisualizacionArbol(Long usuarioId) {
+        return obtenerArbolUsuario(usuarioId).visualizarArbol();
+    }
 }

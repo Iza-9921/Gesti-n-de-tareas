@@ -56,4 +56,24 @@ public class ArbolBinarioBusqueda<T extends Comparable<T>> {
             inOrdenRec(nodo.getDerecho(), resultado);
         }
     }
+    public String visualizarArbol() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Árbol Binario de Tareas ===\n");
+        visualizarRec(raiz, "", true, sb);
+        return sb.toString();
+    }
+
+    private void visualizarRec(NodoArbol<T> nodo, String prefijo, boolean esUltimo, StringBuilder sb) {
+        if (nodo != null) {
+            sb.append(prefijo);
+            sb.append(esUltimo ? "└── " : "├── ");
+            sb.append(nodo.getValor().toString()).append("\n");
+
+            String nuevoPrefijo = prefijo + (esUltimo ? "    " : "│   ");
+
+            // Mostrar hijo derecho primero (para visualización vertical)
+            visualizarRec(nodo.getDerecho(), nuevoPrefijo, false, sb);
+            visualizarRec(nodo.getIzquierdo(), nuevoPrefijo, true, sb);
+        }
+    }
 }
