@@ -1,79 +1,50 @@
 package com.example.integradoravirna.estructuras;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
-
 public class Cola<T> {
-    private Object[] datos;
-    private int inicio;
-    private int fin;
-    private int size;
+    private MiListaArreglo<T> elementos;
 
     public Cola() {
-        datos = new Object[10];
-        inicio = 0;
-        fin = 0;
-        size = 0;
+        elementos = new MiListaArreglo<>();
     }
 
     public void encolar(T elemento) {
-        if (size == datos.length) expandir();
-        datos[fin] = elemento;
-        fin = (fin + 1) % datos.length;
-        size++;
+        elementos.agregar(elemento);
     }
 
-    @SuppressWarnings("unchecked")
     public T desencolar() {
-        if (size == 0) return null;
-        T elemento = (T) datos[inicio];
-        datos[inicio] = null;
-        inicio = (inicio + 1) % datos.length;
-        size--;
+        if (estaVacia()) {
+            return null;
+        }
+        T elemento = elementos.obtener(0);
+        elementos.eliminar(elemento);
         return elemento;
     }
 
-    @SuppressWarnings("unchecked")
     public T verFrente() {
-        if (size == 0) return null;
-        return (T) datos[inicio];
+        if (estaVacia()) {
+            return null;
+        }
+        return elementos.obtener(0);
     }
 
-    public boolean estaVacia() { return size == 0; }
-    public int tamaño() { return size; }
-
-    private void expandir() {
-        Object[] nuevo = new Object[datos.length * 2];
-        for (int i = 0; i < size; i++) {
-            nuevo[i] = datos[(inicio + i) % datos.length];
-        }
-        datos = nuevo;
-        inicio = 0;
-        fin = size;
+    public int tamaño() {
+        return elementos.tamaño();
     }
 
-    @SuppressWarnings("unchecked")
-    public List<T> comoLista() {
-        List<T> lista = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            lista.add((T) datos[(inicio + i) % datos.length]);
-        }
-        return lista;
+    public boolean estaVacia() {
+        return elementos.estaVacia();
     }
 
-    public void removeIf(Predicate<T> predicate) {
-        List<T> lista = comoLista();
-        Cola<T> nueva = new Cola<>();
-        for (T e : lista) {
-            if (!predicate.test(e)) {
-                nueva.encolar(e);
-            }
-        }
-        // reemplazar internals con nueva
-        this.datos = nueva.datos;
-        this.inicio = nueva.inicio;
-        this.fin = nueva.fin;
-        this.size = nueva.size;
+    public MiListaArreglo<T> comoLista() {
+        return elementos;
+    }
+
+    public void vaciar() {
+        elementos.limpiar(); // ¡Aquí se usa limpiar()!
+    }
+
+    @Override
+    public String toString() {
+        return elementos.toString();
     }
 }

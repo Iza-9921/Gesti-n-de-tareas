@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Sistema de Gestión de Tareas — Moderno</title>
+    <title>Inicio — Sistema de Tareas</title>
     <link rel="stylesheet" th:href="@{/css/estilos.css}" href="/css/estilos.css" />
 </head>
 <body>
@@ -17,11 +17,26 @@
             </div>
             <div>
                 <h1>Sistema de Gestión de Tareas</h1>
-                <p class="lead">Organiza, prioriza y completa tus tareas — interfaz moderna y dinámica</p>
+                <p class="lead" th:text="'Bienvenido, ' + ${usuario.nombre}">Bienvenido, Usuario</p>
             </div>
         </div>
 
         <div class="center">
+            <!-- Información del usuario -->
+            <div style="text-align:right; margin-right: 20px;">
+                <div class="muted">Usuario</div>
+                <div style="font-weight: 600; color: #e6eef8;" th:text="${usuario.nombre}">Usuario</div>
+                <div style="margin-top: 5px;">
+                    <a href="/perfil" style="font-size: 12px; color: #3b82f6; margin-right: 10px;">Mi Perfil</a>
+                    <span style="font-size: 12px; color: #9fb4d4; margin-right: 10px;">|</span>
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" style="background: none; border: none; color: #9fb4d4; font-size: 12px; cursor: pointer;">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <div style="text-align:right">
                 <div class="muted">Siguiente en cola</div>
                 <div id="colaFrontSmall" class="muted" th:text="${siguienteEnCola != null ? siguienteEnCola : '—'}">—</div>
@@ -30,244 +45,252 @@
         </div>
     </header>
 
-    <!-- 🔵 BOTÓN NUEVO PARA VER ÁRBOL -->
-    <div style="max-width: 1000px; margin: 0 auto 25px auto; text-align: right;">
-        <a href="/ordenadas"
-           style="
-               background: linear-gradient(135deg, #3AA0FF, #6F5BFF);
-               padding: 10px 20px;
-               border-radius: 12px;
-               color: #fff;
-               font-weight: 600;
-               text-decoration: none;
-               box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-               display: inline-block;
-               transition: 0.25s ease-in-out;">
-            Ver Tareas Ordenadas
+    <!-- Estadísticas del usuario -->
+    <div th:if="${estadisticas != null}" style="max-width:1000px; margin: 20px auto; display: flex; gap: 10px; flex-wrap: wrap;">
+        <div style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+            📊 Total: <span th:text="${estadisticas.total}">0</span>
+        </div>
+        <div style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+            ✅ Completadas: <span th:text="${estadisticas.completadas}">0</span>
+        </div>
+        <div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+            ⏳ Pendientes: <span th:text="${estadisticas.pendientes}">0</span>
+        </div>
+        <div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+            🔴 Alta: <span th:text="${estadisticas.alta}">0</span>
+        </div>
+    </div>
+
+    <!-- Botón de búsqueda y ordenar -->
+    <div style="display:flex; gap:15px; margin:30px 0; max-width:1000px; margin-left:auto; margin-right:auto;">
+        <form method="get" action="/" class="search-form">
+            <input type="text" name="busqueda" placeholder="Buscar tareas..." th:value="${busqueda ?: ''}" autocomplete="off" />
+            <button type="submit">🔍</button>
+        </form>
+
+        <a href="/ordenadas" class="btn btn-secondary" style="padding: 12px 20px; display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+            </svg>
+            Ordenar por prioridad
         </a>
     </div>
 
-    <!-- Mensajes flash -->
-    <div style="max-width:1000px;margin:18px auto;">
-        <div th:if="${mensajeConfirmacion != null}" class="flash flash-success" th:text="${mensajeConfirmacion}"></div>
-        <div th:if="${error != null}" class="flash flash-error" th:text="${error}"></div>
+    <!-- Mensajes de confirmación/error -->
+    <div class="flash-messages">
+        <div th:if="${mensajeConfirmacion}" class="alert alert-success" role="alert">
+            <span th:text="${mensajeConfirmacion}">Mensaje de confirmación</span>
+        </div>
+        <div th:if="${error}" class="alert alert-error" role="alert">
+            <span th:text="${error}">Mensaje de error</span>
+        </div>
     </div>
 
-    <main class="grid">
+    <!-- Contenido principal -->
+    <div class="main-content">
 
-        <!-- Sección: Añadir Tarea -->
-        <section class="card">
-            <h2>Añadir tarea</h2>
-            <form th:action="@{/agregar}" th:object="${tareaNueva}" method="post" class="form" id="formTask">
-
-                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-                <div class="field">
-                    <label for="titulo">Título</label>
-                    <input id="titulo" th:field="*{titulo}" name="titulo" type="text" placeholder="Ej. Terminar informe" required />
+        <!-- Si hay búsqueda, mostrar resultados -->
+        <div th:if="${busqueda != null and not busqueda.isEmpty()}">
+            <h2>Resultados de búsqueda: "<span th:text="${busqueda}"></span>"</h2>
+            <div th:if="${resultadosBusqueda != null and not resultadosBusqueda.isEmpty()}">
+                <div class="task-list">
+                    <div th:each="tarea : ${resultadosBusqueda}" class="task-item">
+                        <div class="task-priority" th:classappend="'priority-' + ${tarea.prioridad.toString().toLowerCase()}"></div>
+                        <div class="task-content">
+                            <div class="task-header">
+                                <strong th:text="${tarea.titulo}">Título</strong>
+                                <span class="task-status" th:text="${tarea.estado}">Estado</span>
+                            </div>
+                            <div class="task-desc" th:text="${tarea.descripcion} ?: 'Sin descripción'">Descripción</div>
+                            <div class="task-actions">
+                                <a th:href="@{/editar/{id}(id=${tarea.id})}" class="btn btn-small">✏️ Editar</a>
+                                <form th:action="@{/encolar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small">📥 Encolar</button>
+                                </form>
+                                <form th:action="@{/eliminar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('¿Eliminar esta tarea?')">🗑️ Eliminar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <div th:if="${resultadosBusqueda == null or resultadosBusqueda.isEmpty()}">
+                <p class="muted">No se encontraron tareas para "<span th:text="${busqueda}"></span>"</p>
+            </div>
+        </div>
 
-                <div class="field">
+        <!-- Si no hay búsqueda, mostrar tareas por prioridad -->
+        <div th:unless="${busqueda != null and not busqueda.isEmpty()}">
+            <!-- Tareas ALTA -->
+            <section th:if="${not tareasAlta.isEmpty()}">
+                <h2>Tareas de <span class="priority-high">ALTA</span> prioridad</h2>
+                <div class="task-list">
+                    <div th:each="tarea : ${tareasAlta}" class="task-item">
+                        <div class="task-priority priority-alta"></div>
+                        <div class="task-content">
+                            <div class="task-header">
+                                <strong th:text="${tarea.titulo}">Título</strong>
+                                <span class="task-status" th:text="${tarea.estado}">Estado</span>
+                            </div>
+                            <div class="task-desc" th:text="${tarea.descripcion} ?: 'Sin descripción'">Descripción</div>
+                            <div class="task-actions">
+                                <a th:href="@{/editar/{id}(id=${tarea.id})}" class="btn btn-small">✏️ Editar</a>
+                                <form th:action="@{/encolar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small">📥 Encolar</button>
+                                </form>
+                                <form th:action="@{/completar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small" th:if="${tarea.estado.toString() == 'PENDIENTE'}">✅ Completar</button>
+                                </form>
+                                <form th:action="@{/eliminar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('¿Eliminar esta tarea?')">🗑️ Eliminar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tareas MEDIA -->
+            <section th:if="${not tareasMedia.isEmpty()}">
+                <h2>Tareas de <span class="priority-medium">MEDIA</span> prioridad</h2>
+                <div class="task-list">
+                    <div th:each="tarea : ${tareasMedia}" class="task-item">
+                        <div class="task-priority priority-media"></div>
+                        <div class="task-content">
+                            <div class="task-header">
+                                <strong th:text="${tarea.titulo}">Título</strong>
+                                <span class="task-status" th:text="${tarea.estado}">Estado</span>
+                            </div>
+                            <div class="task-desc" th:text="${tarea.descripcion} ?: 'Sin descripción'">Descripción</div>
+                            <div class="task-actions">
+                                <a th:href="@{/editar/{id}(id=${tarea.id})}" class="btn btn-small">✏️ Editar</a>
+                                <form th:action="@{/encolar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small">📥 Encolar</button>
+                                </form>
+                                <form th:action="@{/completar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small" th:if="${tarea.estado.toString() == 'PENDIENTE'}">✅ Completar</button>
+                                </form>
+                                <form th:action="@{/eliminar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('¿Eliminar esta tarea?')">🗑️ Eliminar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tareas BAJA -->
+            <section th:if="${not tareasBaja.isEmpty()}">
+                <h2>Tareas de <span class="priority-low">BAJA</span> prioridad</h2>
+                <div class="task-list">
+                    <div th:each="tarea : ${tareasBaja}" class="task-item">
+                        <div class="task-priority priority-baja"></div>
+                        <div class="task-content">
+                            <div class="task-header">
+                                <strong th:text="${tarea.titulo}">Título</strong>
+                                <span class="task-status" th:text="${tarea.estado}">Estado</span>
+                            </div>
+                            <div class="task-desc" th:text="${tarea.descripcion} ?: 'Sin descripción'">Descripción</div>
+                            <div class="task-actions">
+                                <a th:href="@{/editar/{id}(id=${tarea.id})}" class="btn btn-small">✏️ Editar</a>
+                                <form th:action="@{/encolar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small">📥 Encolar</button>
+                                </form>
+                                <form th:action="@{/completar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small" th:if="${tarea.estado.toString() == 'PENDIENTE'}">✅ Completar</button>
+                                </form>
+                                <form th:action="@{/eliminar/{id}(id=${tarea.id})}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('¿Eliminar esta tarea?')">🗑️ Eliminar</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Formulario para nueva tarea -->
+        <section>
+            <h2>Crear nueva tarea</h2>
+            <form th:action="@{/agregar}" method="post" th:object="${tareaNueva}" class="task-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="titulo">Título</label>
+                        <input type="text" id="titulo" th:field="*{titulo}" placeholder="Ej: Revisar correos" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="prioridad">Prioridad</label>
+                        <select id="prioridad" th:field="*{prioridad}">
+                            <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p}">MEDIA</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label for="descripcion">Descripción</label>
-                    <textarea id="descripcion" th:field="*{descripcion}" name="descripcion" placeholder="Detalles opcionales"></textarea>
+                    <textarea id="descripcion" th:field="*{descripcion}" placeholder="Descripción detallada de la tarea..." rows="3"></textarea>
                 </div>
-
-                <div class="field">
-                    <label for="prioridad">Prioridad</label>
-                    <select id="prioridad" th:field="*{prioridad}" name="prioridad">
-                        <option th:each="p : ${prioridades}" th:value="${p}" th:text="${p}">ALTA</option>
-                    </select>
-                </div>
-
-                <div class="actions">
-                    <button class="btn btn-primary" type="submit">Agregar Tarea</button>
-                    <button class="btn btn-ghost" type="reset">Limpiar</button>
-                </div>
+                <button type="submit" class="btn btn-primary">➕ Agregar tarea</button>
             </form>
         </section>
 
-        <!-- Sección: Lista de Tareas por Prioridad -->
-
-        <section class="card full-width">
-            <h2>Lista de Tareas por Prioridad</h2>
-
-            <!-- ALTA -->
-            <h3>Prioridad ALTA</h3>
-            <div class="tasks" th:if="${tareasAlta != null and !#lists.isEmpty(tareasAlta)}">
-                <div class="task-row"
-                     th:each="tarea : ${tareasAlta}"
-                     th:classappend="${tarea != null and tarea.estado != null and tarea.estado.name() == 'COMPLETADA'} ? 'completada' : ''">
-                    <div class="task-info">
-                        <div class="task-title" th:text="${tarea.titulo ?: 'Título de tarea'}">Título</div>
-                        <div class="task-desc" th:text="${tarea.descripcion ?: 'Sin descripción'}">Descripción</div>
-                        <div class="task-meta">
-                            <span class="task-priority priority-ALTA" th:text="${tarea.prioridad ?: 'ALTA'}">ALTA</span>
-                            <span th:text="${tarea.estado ?: 'PENDIENTE'}"></span>
-                        </div>
-                    </div>
-                    <div class="task-actions">
-                        <form th:action="@{/completar/{id}(id=${tarea.id})}" method="post">
-                            <button class="btn btn-success btn-small" th:if="${tarea.estado.name() != 'COMPLETADA'}">✓</button>
+        <!-- Panel de cola de procesamiento -->
+        <section th:if="${not colaTareas.isEmpty()}">
+            <h2>Cola de procesamiento (<span th:text="${totalEnCola}">0</span> tareas)</h2>
+            <div class="queue-panel">
+                <div class="queue-header">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <span>Siguiente: <strong th:text="${siguienteEnCola}">—</strong></span>
+                        <form th:action="@{/procesar}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-success btn-small">Procesar siguiente</button>
                         </form>
-
-                        <form th:action="@{/encolar/{id}(id=${tarea.id})}" method="post">
-                            <button class="btn btn-primary btn-small" th:if="${tarea.estado.name() != 'COMPLETADA'}">Encolar</button>
-                        </form>
-
-                        <form th:action="@{/eliminar/{id}(id=${tarea.id})}" method="post">
-                            <button class="btn btn-danger btn-small">✕</button>
+                        <form th:action="@{/desencolar}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-warning btn-small">Desencolar</button>
                         </form>
                     </div>
                 </div>
-            </div>
-
-            <div class="empty-state" th:if="${tareasAlta == null or #lists.isEmpty(tareasAlta)}">
-                No hay tareas en esta prioridad.
-            </div>
-
-            <!-- MEDIA -->
-            <h3>Prioridad MEDIA</h3>
-            <div class="tasks" th:if="${tareasMedia != null and !#lists.isEmpty(tareasMedia)}">
-                <div class="task-row" th:each="tarea : ${tareasMedia}">
-                    <div class="task-info">
-                        <div class="task-title" th:text="${tarea.titulo ?: 'Título'}"></div>
-                        <div class="task-desc" th:text="${tarea.descripcion ?: 'Sin descripción'}"></div>
-                        <div class="task-meta">
-                            <span class="task-priority priority-MEDIA" th:text="${tarea.prioridad}">MEDIA</span>
-                            <span th:text="${tarea.estado}"></span>
+                <div class="queue-list">
+                    <div th:each="tarea : ${colaTareas}" class="queue-item">
+                        <div class="queue-item-priority" th:classappend="'priority-' + ${tarea.prioridad.toString().toLowerCase()}"></div>
+                        <div class="queue-item-content">
+                            <strong th:text="${tarea.titulo}">Título</strong>
+                            <div class="muted" style="font-size:13px;" th:text="${tarea.descripcion ?: 'Sin descripción'}">Descripción</div>
                         </div>
                     </div>
-
-                    <div class="task-actions">
-                        <form th:action="@{/completar/{id}(id=${tarea.id})}" method="post">
-                            <button class="btn btn-success btn-small" th:if="${tarea.estado.name() != 'COMPLETADA'}">✓</button>
-                        </form>
-
-                        <form th:action="@{/encolar/{id}(id=${tarea.id})}" method="post">
-                            <button class="btn btn-primary btn-small" th:if="${tarea.estado.name() != 'COMPLETADA'}">Encolar</button>
-                        </form>
-
-                        <form th:action="@{/eliminar/{id}(id=${tarea.id})}" method="post">
-                            <button class="btn btn-danger btn-small">✕</button>
-                        </form>
-                    </div>
                 </div>
-            </div>
-
-            <div class="empty-state" th:if="${tareasMedia == null or #lists.isEmpty(tareasMedia)}">
-                No hay tareas en esta prioridad.
-            </div>
-
-            <!-- BAJA -->
-            <h3>Prioridad BAJA</h3>
-            <div class="tasks" th:if="${tareasBaja != null and !#lists.isEmpty(tareasBaja)}">
-                <div class="task-row" th:each="tarea : ${tareasBaja}">
-                    <div class="task-info">
-                        <div class="task-title" th:text="${tarea.titulo ?: 'Título'}"></div>
-                        <div class="task-desc" th:text="${tarea.descripcion ?: 'Sin descripción'}"></div>
-                        <div class="task-meta">
-                            <span class="task-priority priority-BAJA" th:text="${tarea.prioridad}">BAJA</span>
-                            <span th:text="${tarea.estado}"></span>
-                        </div>
-                    </div>
-
-                    <div class="task-actions">
-                        <form th:action="@{/completar/{id}(id=${tarea.id})}" method="post">
-                            <button class="btn btn-success btn-small" th:if="${tarea.estado.name() != 'COMPLETADA'}">✓</button>
-                        </form>
-
-                        <form th:action="@{/encolar/{id}(id=${tarea.id})}" method="post">
-                            <button class="btn btn-primary btn-small" th:if="${tarea.estado.name() != 'COMPLETADA'}">Encolar</button>
-                        </form>
-
-                        <form th:action="@{/eliminar/{id}(id=${tarea.id})}" method="post">
-                            <button class="btn btn-danger btn-small">✕</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <div class="empty-state" th:if="${tareasBaja == null or #lists.isEmpty(tareasBaja)}">
-                No hay tareas en esta prioridad.
             </div>
         </section>
 
-        <!-- Cola -->
-        <section class="card full-width cola-section">
-            <h2>Cola de Procesamiento</h2>
-            <div class="muted">Tareas listas para ser procesadas (FIFO)</div>
-
-            <div class="tasks" th:if="${colaTareas != null and !#lists.isEmpty(colaTareas)}">
-                <div class="task-row" th:each="tarea, iter : ${colaTareas}">
-                    <div class="task-info">
-                        <div class="task-title" th:text="${tarea.titulo}"></div>
-                        <div class="task-desc" th:text="${tarea.descripcion}"></div>
-                        <div class="task-meta">
-                            <span class="task-priority"
-                                  th:classappend="' priority-' + tarea.prioridad"
-                                  th:text="${tarea.prioridad}"></span>
-                            <span>Posición: <strong th:text="${iter.index + 1}"></strong></span>
-                        </div>
-                    </div>
-
-                    <div class="task-actions">
-                        <form th:action="@{/procesar}" method="post">
-                            <button class="btn btn-success btn-small">Procesar</button>
-                        </form>
-
-                        <form th:action="@{/desencolar}" method="post">
-                            <button class="btn btn-warning btn-small">Quitar</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <div class="empty-state" th:if="${colaTareas == null or #lists.isEmpty(colaTareas)}">
-                La cola está vacía.
-            </div>
-        </section>
-
-        <!-- Historial -->
-        <section class="card full-width historial-section">
-            <h2>Historial Reciente</h2>
-
-            <!-- ✔ BOTÓN NUEVO PARA LIMPIAR HISTORIAL -->
-            <div style="text-align: right; margin-bottom: 15px;">
-                <form th:action="@{/limpiarHistorial}" method="post" style="display:inline;">
-                    <button class="btn btn-danger"
-                            style="
-                            border-radius: 12px;
-                            padding: 8px 16px;
-                            font-weight: 600;
-                            box-shadow: 0 4px 12px rgba(255,0,0,0.25);">
-                        Limpiar Historial
-                    </button>
+        <!-- Panel de historial -->
+        <section th:if="${not pilaHistorial.isEmpty()}">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2>Historial de acciones (<span th:text="${pilaHistorial.size()}">0</span>)</h2>
+                <form th:action="@{/limpiarHistorial}" method="post">
+                    <button type="submit" class="btn btn-small btn-warning" onclick="return confirm('¿Limpiar todo el historial?')">Limpiar historial</button>
                 </form>
             </div>
-
-            <div class="muted">Últimas acciones (LIFO)</div>
-
-            <div class="tasks" th:if="${pilaHistorial != null and !#lists.isEmpty(pilaHistorial)}">
-                <div class="task-row" th:each="accion : ${pilaHistorial}">
-                    <div class="task-info">
-                        <div class="task-title" th:text="${accion.titulo}"></div>
-                        <div class="task-desc" th:text="${accion.descripcion}"></div>
-                        <div class="task-meta">
-                            <span th:text="${#temporals.format(accion.fechaCreacion, 'dd/MM/yyyy HH:mm:ss')}"></span>
-                            <span th:text="${accion.accion}"></span>
+            <div class="history-panel">
+                <div th:each="historial : ${pilaHistorial}" class="history-item">
+                    <div class="history-time">
+                        <span th:text="${historial.fecha != null ? #temporals.format(historial.fecha, 'HH:mm') : '--:--'}">10:00</span>                    </div>
+                    <div class="history-content">
+                        <div class="history-title">
+                            <strong th:text="${historial.titulo}">Título</strong>
+                            <span class="history-action" th:text="${historial.accion}">Acción</span>
                         </div>
+                        <div class="history-desc" th:text="${historial.descripcion}">Descripción</div>
                     </div>
                 </div>
             </div>
-
-            <div class="empty-state" th:if="${pilaHistorial == null or #lists.isEmpty(pilaHistorial)}">
-                No hay acciones recientes.
-            </div>
         </section>
-    </main>
+    </div>
 
-    <footer style="margin-top:60px;text-align:center;color:#9fb4d4;font-size:13px;padding:20px 0;border-top:1px solid rgba(255,255,255,0.05);">
-        <p>Sistema de Gestión de Tareas &copy; 2024 - Implementando Estructuras de Datos</p>
+    <footer>
+        <p class="muted">Sistema de Gestión de Tareas &copy; 2024</p>
+        <p class="muted" style="margin-top:5px;">
+            Usuario: <span th:text="${usuario.email}">usuario@ejemplo.com</span> |
+            <a href="/perfil" style="color:#9fb4d4; text-decoration:underline;">Mi Perfil</a>
+        </p>
     </footer>
 </div>
 </body>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Editar Tarea — Sistema de Gestión</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" href="/css/estilos.css" />
+    <style>
+        .editar-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.04);
+            box-shadow: 0 12px 40px rgba(2,6,23,0.6);
+            backdrop-filter: blur(10px);
+        }
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #9fb4d4;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            color: #e6eef8;
+        }
+        .task-id-badge {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <div class="brand">
+            <div class="logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M4 12c0-4.418 3.582-8 8-8s8 3.582 8 8" stroke="#fff" stroke-opacity="0.95" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div>
+                <h1>Editar Tarea</h1>
+                <p class="lead">Modifica los detalles de la tarea seleccionada</p>
+            </div>
+        </div>
+    </header>
+
+    <a href="/" class="back-link">← Volver a la lista de tareas</a>
+
+    <div class="editar-container">
+        <h2>
+            Editar Tarea
+            <span class="task-id-badge">ID: <span th:text="${tarea.id}">0</span></span>
+        </h2>
+
+        <form th:action="@{/editar/{id}(id=${tarea.id})}" th:object="${tarea}" method="post" class="form">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <div class="field">
+                <label for="titulo">Título *</label>
+                <input id="titulo" th:field="*{titulo}" name="titulo" type="text"
+                       placeholder="Ej. Terminar informe" required />
+            </div>
+
+            <div class="field">
+                <label for="descripcion">Descripción</label>
+                <textarea id="descripcion" th:field="*{descripcion}" name="descripcion"
+                          placeholder="Detalles de la tarea" rows="4"></textarea>
+            </div>
+
+            <div class="field">
+                <label for="prioridad">Prioridad</label>
+                <select id="prioridad" th:field="*{prioridad}" name="prioridad">
+                    <option th:each="p : ${prioridades}"
+                            th:value="${p}"
+                            th:text="${p}"
+                            th:selected="${p == tarea.prioridad}">
+                        ALTA
+                    </option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="estado">Estado</label>
+                <select id="estado" th:field="*{estado}" name="estado">
+                    <option value="PENDIENTE" th:selected="${tarea.estado == 'PENDIENTE'}">PENDIENTE</option>
+                    <option value="COMPLETADA" th:selected="${tarea.estado == 'COMPLETADA'}">COMPLETADA</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Información adicional</label>
+                <div style="padding: 10px; background: rgba(255,255,255,0.02); border-radius: 8px; font-size: 13px; color: #9fb4d4;">
+                    <div>ID: <strong th:text="${tarea.id}">0</strong></div>
+                    <div>Fecha de creación: <strong th:text="${#temporals.format(tarea.fechaCreacion, 'dd/MM/yyyy HH:mm:ss')}">fecha</strong></div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Guardar Cambios</button>
+                <a href="/" class="btn btn-ghost">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

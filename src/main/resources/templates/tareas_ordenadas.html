@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Tareas Ordenadas</title>
-    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tareas Ordenadas — Sistema de Gestión</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}" href="/css/estilos.css" />
 </head>
-
 <body>
 <div class="wrap">
-
     <header style="margin-bottom: 20px;">
         <h1 style="font-size: 28px; font-weight: 700; color: #fff; text-align:center;">
             Tareas Ordenadas por Prioridad
@@ -20,21 +19,11 @@
 
     <div style="max-width: 1200px; margin: 0 auto 25px auto; text-align: center;">
         <a href="/"
-           style="
-               background: linear-gradient(135deg, #6F5BFF, #3AA0FF);
-               padding: 10px 20px;
-               border-radius: 12px;
-               color: #fff;
-               font-weight: 600;
-               text-decoration: none;
-               box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-               display: inline-block;
-               margin-bottom: 20px;">
+           style="background: linear-gradient(135deg, #6F5BFF, #3AA0FF); padding: 10px 20px; border-radius: 12px; color: #fff; font-weight: 600; text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.25); display: inline-block; margin-bottom: 20px;">
             ← Volver al inicio
         </a>
     </div>
 
-    <!-- TABLA MODERNA -->
     <div style="max-width: 1200px; margin: 0 auto;">
         <table style="width: 100%; border-collapse: collapse; background: #0e1a2b; border-radius: 12px; overflow: hidden;">
             <thead>
@@ -49,33 +38,19 @@
             </thead>
 
             <tbody>
-            <tr th:each="t : ${tareasOrdenadas}"
-                style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <td style="padding: 12px; color:#fff;" th:text="${t.id}"></td>
-                <td style="padding: 12px; color:#fff;" th:text="${t.titulo}"></td>
-                <td style="padding: 12px; color:#ccc;" th:text="${t.descripcion}"></td>
-
+            <tr th:each="t : ${tareasOrdenadas}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 12px; color:#fff;" th:text="${t.id}">1</td>
+                <td style="padding: 12px; color:#fff;" th:text="${t.titulo}">Título</td>
+                <td style="padding: 12px; color:#ccc;" th:text="${t.descripcion}">Descripción</td>
                 <td style="padding: 12px;">
-                    <span th:text="${t.prioridad}"
-                          th:class="'priority-' + ${t.prioridad}"
-                          style="
-                                padding: 6px 10px;
-                                border-radius: 8px;
-                                font-weight: 700;
-                                font-size: 12px;">
-                    </span>
+                    <span th:text="${t.prioridad}">ALTA</span>
                 </td>
-
-                <td style="padding: 12px; color:#fff;" th:text="${t.estado}"></td>
-
-                <td style="padding: 12px; color:#9fb4d4;"
-                    th:text="${#temporals.format(t.fechaCreacion, 'dd/MM/yyyy HH:mm:ss')}">
-                </td>
+                <td style="padding: 12px; color:#fff;" th:text="${t.estado}">PENDIENTE</td>
+                <td style="padding: 12px; color:#9fb4d4;" th:text="${#temporals.format(t.fechaCreacion, 'dd/MM/yyyy HH:mm:ss')}">fecha</td>
             </tr>
             </tbody>
         </table>
     </div>
-
 </div>
 </body>
 </html>

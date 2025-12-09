@@ -1,63 +1,56 @@
 package com.example.integradoravirna.estructuras;
 
-import com.example.integradoravirna.modelo.Prioridad;
-import com.example.integradoravirna.modelo.Tarea;
+public class ArbolBinario<T> {
+    private NodoArbol<T> raiz;
 
-public class ArbolBinario {
-
-    private NodoArbol raiz;
-
-    // Insertar
-    public void insertar(Tarea tarea) {
-        raiz = insertarRecursivo(raiz, tarea);
+    public ArbolBinario() {
+        raiz = null;
     }
 
-    private NodoArbol insertarRecursivo(NodoArbol nodo, Tarea tarea) {
-        if (nodo == null) {
-            return new NodoArbol(tarea);
+    public void insertarRaiz(T valor) {
+        if (raiz == null) {
+            raiz = new NodoArbol<>(valor);
+        }
+    }
+
+    public void insertarIzquierdo(T padre, T hijo) {
+        NodoArbol<T> nodoPadre = buscarNodo(raiz, padre);
+        if (nodoPadre != null && nodoPadre.getIzquierdo() == null) {
+            nodoPadre.setIzquierdo(new NodoArbol<>(hijo));
+        }
+    }
+
+    public void insertarDerecho(T padre, T hijo) {
+        NodoArbol<T> nodoPadre = buscarNodo(raiz, padre);
+        if (nodoPadre != null && nodoPadre.getDerecho() == null) {
+            nodoPadre.setDerecho(new NodoArbol<>(hijo));
+        }
+    }
+
+    private NodoArbol<T> buscarNodo(NodoArbol<T> nodo, T valor) {
+        if (nodo == null || nodo.getValor().equals(valor)) {
+            return nodo;
         }
 
-        // Orden por prioridad
-        int comparacion = compararTareas(tarea, nodo.getTarea());
-
-        if (comparacion < 0) {
-            nodo.setIzquierdo(insertarRecursivo(nodo.getIzquierdo(), tarea));
-        } else {
-            nodo.setDerecho(insertarRecursivo(nodo.getDerecho(), tarea));
+        NodoArbol<T> encontrado = buscarNodo(nodo.getIzquierdo(), valor);
+        if (encontrado != null) {
+            return encontrado;
         }
 
-        return nodo;
+        return buscarNodo(nodo.getDerecho(), valor);
     }
 
-    // Comparar prioridad y si es igual comparar ID
-    private int compararTareas(Tarea t1, Tarea t2) {
-        int p1 = prioridadValor(t1.getPrioridad());
-        int p2 = prioridadValor(t2.getPrioridad());
-
-        if (p1 != p2) {
-            return p1 - p2;
-        }
-        return t1.getId().compareTo(t2.getId());
+    public MiListaArreglo<T> recorridoPreOrden() {
+        MiListaArreglo<T> resultado = new MiListaArreglo<>();
+        preOrdenRec(raiz, resultado);
+        return resultado;
     }
 
-    private int prioridadValor(Prioridad p) {
-        return switch (p) {
-            case ALTA -> 1;
-            case MEDIA -> 2;
-            case BAJA -> 3;
-        };
-    }
-
-    // Mostrar ordenado (in-order)
-    public void mostrarEnOrden() {
-        mostrarEnOrdenRec(raiz);
-    }
-
-    private void mostrarEnOrdenRec(NodoArbol nodo) {
+    private void preOrdenRec(NodoArbol<T> nodo, MiListaArreglo<T> resultado) {
         if (nodo != null) {
-            mostrarEnOrdenRec(nodo.getIzquierdo());
-            System.out.println(nodo.getTarea());
-            mostrarEnOrdenRec(nodo.getDerecho());
+            resultado.agregar(nodo.getValor());
+            preOrdenRec(nodo.getIzquierdo(), resultado);
+            preOrdenRec(nodo.getDerecho(), resultado);
         }
     }
 }

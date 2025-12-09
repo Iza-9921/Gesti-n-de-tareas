@@ -13,55 +13,50 @@ public class Tarea implements Comparable<Tarea> {
     private Prioridad prioridad;
     private Estado estado;
     private LocalDateTime fechaCreacion;
+    private Long usuarioId; // ID del usuario dueño de la tarea
 
-    // ✔ Constructor vacío necesario para Spring y para inicializar campos
     public Tarea() {
         this.id = GENERADOR_ID.getAndIncrement();
         this.estado = Estado.PENDIENTE;
         this.fechaCreacion = LocalDateTime.now();
     }
 
-    // ✔ Constructor con parámetros
-    public Tarea(String titulo, String descripcion, Prioridad prioridad) {
+    public Tarea(String titulo, String descripcion, Prioridad prioridad, Long usuarioId) {
         this();
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.prioridad = prioridad;
+        this.usuarioId = usuarioId;
     }
 
-    // ✔ Implementación de Comparable (prioridad → id)
     @Override
     public int compareTo(Tarea otra) {
-        // primero compara por prioridad
         int comp = this.prioridad.ordinal() - otra.prioridad.ordinal();
-
         if (comp != 0) return comp;
-
-        // si tienen misma prioridad, ordena por ID
         return this.id.compareTo(otra.id);
     }
 
-    // --- Getters y Setters ----
-
+    // Getters y Setters
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getTitulo() { return titulo; }
-
     public void setTitulo(String titulo) { this.titulo = titulo; }
 
     public String getDescripcion() { return descripcion; }
-
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
     public Prioridad getPrioridad() { return prioridad; }
-
     public void setPrioridad(Prioridad prioridad) { this.prioridad = prioridad; }
 
     public Estado getEstado() { return estado; }
-
     public void setEstado(Estado estado) { this.estado = estado; }
 
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    public Long getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
 
     @Override
     public String toString() {
@@ -70,6 +65,7 @@ public class Tarea implements Comparable<Tarea> {
                 ", titulo='" + titulo + '\'' +
                 ", prioridad=" + prioridad +
                 ", estado=" + estado +
+                ", usuarioId=" + usuarioId +
                 '}';
     }
 }

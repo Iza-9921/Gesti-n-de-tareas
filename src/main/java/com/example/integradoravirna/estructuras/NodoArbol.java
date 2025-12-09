@@ -1,34 +1,23 @@
 package com.example.integradoravirna.estructuras;
 
-import com.example.integradoravirna.modelo.Tarea;
+public class NodoArbol<T> {
+    private T valor;
+    private NodoArbol<T> izquierdo;
+    private NodoArbol<T> derecho;
 
-public class NodoArbol {
-
-    private Tarea tarea;
-    private NodoArbol izquierdo;
-    private NodoArbol derecho;
-
-    public NodoArbol(Tarea tarea) {
-        this.tarea = tarea;
+    public NodoArbol(T valor) {
+        this.valor = valor;
+        this.izquierdo = null;
+        this.derecho = null;
     }
 
-    public Tarea getTarea() {
-        return tarea;
-    }
+    // Getters y Setters
+    public T getValor() { return valor; }
+    public void setValor(T valor) { this.valor = valor; }
 
-    public NodoArbol getIzquierdo() {
-        return izquierdo;
-    }
+    public NodoArbol<T> getIzquierdo() { return izquierdo; }
+    public void setIzquierdo(NodoArbol<T> izquierdo) { this.izquierdo = izquierdo; }
 
-    public void setIzquierdo(NodoArbol izquierdo) {
-        this.izquierdo = izquierdo;
-    }
-
-    public NodoArbol getDerecho() {
-        return derecho;
-    }
-
-    public void setDerecho(NodoArbol derecho) {
-        this.derecho = derecho;
-    }
+    public NodoArbol<T> getDerecho() { return derecho; }
+    public void setDerecho(NodoArbol<T> derecho) { this.derecho = derecho; }
 }

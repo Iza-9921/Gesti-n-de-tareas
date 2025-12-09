@@ -1,61 +1,50 @@
 package com.example.integradoravirna.estructuras;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Pila<T> {
-    private Object[] datos;
-    private int tope;
+    private MiListaArreglo<T> elementos;
 
     public Pila() {
-        datos = new Object[10];
-        tope = 0;
+        elementos = new MiListaArreglo<>();
     }
 
     public void apilar(T elemento) {
-        if (tope == datos.length) {
-            Object[] nuevo = new Object[datos.length * 2];
-            System.arraycopy(datos, 0, nuevo, 0, datos.length);
-            datos = nuevo;
-        }
-        datos[tope++] = elemento;
+        elementos.agregar(elemento);
     }
 
-    @SuppressWarnings("unchecked")
     public T desapilar() {
-        if (tope == 0) return null;
-        T valor = (T) datos[--tope];
-        datos[tope] = null;
-        return valor;
+        if (estaVacia()) {
+            return null;
+        }
+        T elemento = elementos.obtener(elementos.tamaño() - 1);
+        elementos.eliminar(elemento);
+        return elemento;
     }
 
-    @SuppressWarnings("unchecked")
     public T verTope() {
-        if (tope == 0) return null;
-        return (T) datos[tope - 1];
-    }
-
-    public boolean estaVacia() {
-        return tope == 0;
+        if (estaVacia()) {
+            return null;
+        }
+        return elementos.obtener(elementos.tamaño() - 1);
     }
 
     public int tamaño() {
-        return tope;
+        return elementos.tamaño();
     }
 
-    @SuppressWarnings("unchecked")
-    public List<T> comoLista() {
-        List<T> lista = new ArrayList<>();
-        for (int i = tope - 1; i >= 0; i--) {
-            lista.add((T) datos[i]);
-        }
-        return lista;
+    public boolean estaVacia() {
+        return elementos.estaVacia();
+    }
+
+    public MiListaArreglo<T> comoLista() {
+        return elementos;
     }
 
     public void vaciar() {
-        for (int i = 0; i < tope; i++) {
-            datos[i] = null;
-        }
-        tope = 0;
+        elementos.limpiar(); // ¡Aquí se usa limpiar()!
+    }
+
+    @Override
+    public String toString() {
+        return elementos.toString();
     }
 }

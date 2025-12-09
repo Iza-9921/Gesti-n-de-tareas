@@ -1,30 +1,24 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>Error — Sistema de Tareas</title>
-    <link rel="stylesheet" th:href="@{/css/estilos.css}" href="/css/estilos.css"/>
+    <meta charset="UTF-8">
+    <title>Error</title>
     <style>
-        .error-card { max-width:900px; margin:48px auto; padding:24px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.04); color:#e6eef8; }
-        pre.stack { white-space:pre-wrap; background: rgba(0,0,0,0.32); padding:12px; border-radius:8px; overflow:auto; max-height:400px; color:#ffd6d6; font-size:13px; }
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f8f9fa; }
+        .error-box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 800px; margin: 50px auto; }
+        h1 { color: #dc3545; }
+        .btn { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
     </style>
 </head>
 <body>
-<div class="error-card">
-    <h1>Ocurrió un error inesperado</h1>
-    <p class="muted">Ruta: <strong th:text="${path}">/</strong></p>
-    <p class="muted">Hora: <strong th:text="${timestamp}">-</strong></p>
+<div class="error-box">
+    <h1>⚠️ Error</h1>
+    <p><strong>Ruta:</strong> <span th:text="${path}">/</span></p>
+    <p><strong>Hora:</strong> <span th:text="${timestamp}">-</span></p>
+    <p><strong>Mensaje:</strong> <span th:text="${message}">Error desconocido</span></p>
 
-    <h3>Mensaje</h3>
-    <p th:text="${message}">Error desconocido</p>
-
-    <h3>Detalles (stacktrace)</h3>
-    <pre class="stack" th:text="${stacktrace}">stacktrace</pre>
-
-    <div style="margin-top:16px;">
-        <a th:href="@{/}" class="btn btn-primary">Volver al inicio</a>
-    </div>
+    <a th:href="@{/}" class="btn">Volver al inicio</a>
+    <a th:href="@{/health}" class="btn" style="background: #28a745; margin-left: 10px;">Verificar estado</a>
 </div>
 </body>
 </html>
