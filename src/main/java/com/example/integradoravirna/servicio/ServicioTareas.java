@@ -13,12 +13,14 @@ import java.util.Map;
 public class ServicioTareas {
 
     // Mapa: usuarioId -> sus tareas
+    private final Map<Long, ArbolBinarioBusqueda<Tarea>> arbolesPorUsuario = new HashMap<>();
     private final Map<Long, MiListaArreglo<Tarea>> tareasPorUsuario = new HashMap<>();
     private final Map<Long, Cola<Tarea>> colasPorUsuario = new HashMap<>();
     private final Map<Long, Pila<Historial>> historialesPorUsuario = new HashMap<>();
 
     // Tareas de ejemplo para cada usuario
     private final ServicioUsuario servicioUsuario;
+
 
     public ServicioTareas(ServicioUsuario servicioUsuario) {
         this.servicioUsuario = servicioUsuario;
@@ -43,11 +45,15 @@ public class ServicioTareas {
     }
 
     private void crearTareasEjemploParaUsuario(Long usuarioId, String nombreUsuario) {
-        System.out.println("Creando tareas de ejemplo para usuario: " + nombreUsuario + " (ID: " + usuarioId + ")");
+        // Agregar tareas de ejemplo
+        Tarea t1 = new Tarea("Revisar emails", "Revisar correo electrónico del día", Prioridad.ALTA, usuarioId);
+        Tarea t2 = new Tarea("Preparar informe", "Preparar informe mensual", Prioridad.MEDIA, usuarioId);
+        Tarea t3 = new Tarea("Organizar archivos", "Organizar documentos en la nube", Prioridad.BAJA, usuarioId);
 
-        agregarTarea(new Tarea("Revisar emails", "Revisar correo electrónico del día", Prioridad.ALTA, usuarioId));
-        agregarTarea(new Tarea("Preparar informe", "Preparar informe mensual", Prioridad.MEDIA, usuarioId));
-        agregarTarea(new Tarea("Organizar archivos", "Organizar documentos en la nube", Prioridad.BAJA, usuarioId));
+        // Agregar a estructuras
+        agregarTarea(t1);
+        agregarTarea(t2);
+        agregarTarea(t3);
     }
 
     private MiListaArreglo<Tarea> obtenerTareasUsuario(Long usuarioId) {
@@ -68,10 +74,16 @@ public class ServicioTareas {
         if (t.getEstado() == null) t.setEstado(Estado.PENDIENTE);
 
         Long usuarioId = t.getUsuarioId();
+
+        // 1. Agregar a la lista principal
         obtenerTareasUsuario(usuarioId).agregar(t);
+
+        // 2. Agregar al árbol de búsqueda (NUEVO)
+        obtenerArbolUsuario(usuarioId).insertar(t);
+
+        // 3. Registrar en historial
         obtenerHistorialUsuario(usuarioId).apilar(new Historial(t.getTitulo(), t.getDescripcion(), "CREADA"));
 
-        System.out.println("Tarea agregada para usuario ID: " + usuarioId + " - " + t.getTitulo());
         return t;
     }
 
@@ -332,5 +344,58 @@ public class ServicioTareas {
         stats.put("baja", baja);
 
         return stats;
+    }
+    private ArbolBinarioBusqueda<Tarea> obtenerArbolUsuario(Long usuarioId) {
+        return arbolesPorUsuario.computeIfAbsent(usuarioId, k -> new ArbolBinarioBusqueda<>());
+    }
+
+    // Buscar tareas usando el árbol (más eficiente)
+    public List<Tarea> buscarTareasConArbol(String texto, Long usuarioId) {
+        List<Tarea> resultados = new ArrayList<>();
+        if (texto == null || texto.trim().isEmpty()) {
+            return obtenerTodasComoLista(usuarioId);
+        }
+
+        String textoBusqueda = texto.toLowerCase().trim();
+        MiListaArreglo<Tarea> todasTareas = obtenerTareasUsuario(usuarioId);
+
+        // Usar el árbol para búsqueda más rápida
+        for (int i = 0; i < todasTareas.tamaño(); i++) {
+            Tarea t = todasTareas.obtener(i);
+            if (t != null) {
+                // Verificar si coincide (similar a búsqueda anterior)
+                boolean coincide =
+                        (t.getTitulo() != null && t.getTitulo().toLowerCase().contains(textoBusqueda)) ||
+                                (t.getDescripcion() != null && t.getDescripcion().toLowerCase().contains(textoBusqueda));
+
+                if (coincide) {
+                    resultados.add(t);
+                }
+            }
+        }
+
+        return resultados;
+    }
+
+    // Obtener tareas ordenadas alfabéticamente (usando árbol)
+    public List<Tarea> obtenerTareasOrdenadasAlfabeticamente(Long usuarioId) {
+        List<Tarea> lista = new ArrayList<>();
+        MiListaArreglo<Tarea> ordenadas = obtenerArbolUsuario(usuarioId).inOrden();
+
+        for (int i = 0; i < ordenadas.tamaño(); i++) {
+            Tarea t = ordenadas.obtener(i);
+            if (t != null) lista.add(t);
+        }
+
+        return lista;
+    }
+
+    // Buscar si existe una tarea con título específico (usando árbol)
+    public boolean existeTareaConTitulo(String titulo, Long usuarioId) {
+        // Crear una tarea temporal para la búsqueda
+        Tarea tareaBusqueda = new Tarea();
+        tareaBusqueda.setTitulo(titulo);
+
+        return obtenerArbolUsuario(usuarioId).buscar(tareaBusqueda);
     }
 }
