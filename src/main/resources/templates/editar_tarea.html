@@ -6,39 +6,195 @@
     <title>Editar Tarea — Sistema de Gestión</title>
     <link rel="stylesheet" th:href="@{/css/estilos.css}" href="/css/estilos.css" />
     <style>
-        .editar-container {
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 30px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-            border-radius: 14px;
-            border: 1px solid rgba(255,255,255,0.04);
-            box-shadow: 0 12px 40px rgba(2,6,23,0.6);
-            backdrop-filter: blur(10px);
+        /* Estilos específicos para la página de edición */
+        .wrap {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
         }
-        .form-actions {
+
+        .brand {
             display: flex;
-            gap: 12px;
-            margin-top: 25px;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
         }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6F5BFF, #3AA0FF);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .lead {
+            color: #9fb4d4;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
         .back-link {
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: #9fb4d4;
             text-decoration: none;
             font-size: 14px;
         }
+
         .back-link:hover {
             color: #e6eef8;
+            text-decoration: underline;
         }
+
+        .editar-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+            background: #0e1a2b;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
         .task-id-badge {
-            background: rgba(59, 130, 246, 0.2);
+            background: rgba(59, 130, 246, 0.15);
             color: #3b82f6;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
             margin-left: 10px;
+            display: inline-block;
+        }
+
+        /* Estilos del formulario */
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field label {
+            display: block;
+            color: #9fb4d4;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: #1a2a3d;
+            border: 1px solid #2a3a4d;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: #6F5BFF;
+        }
+
+        .field textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .info-box {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #9fb4d4;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .info-box strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Botones */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6F5BFF, #3AA0FF);
+            color: #fff;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5A4BDF, #2A90FF);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(111, 91, 255, 0.3);
+        }
+
+        .btn-ghost {
+            background: #2a3a4d;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-ghost:hover {
+            background: #3a4a5d;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .wrap {
+                padding: 15px;
+            }
+
+            .editar-container {
+                padding: 20px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn, .btn-ghost {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -52,7 +208,7 @@
                 </svg>
             </div>
             <div>
-                <h1>Editar Tarea</h1>
+                <h1 style="margin: 0; color: #fff; font-size: 24px;">Editar Tarea</h1>
                 <p class="lead">Modifica los detalles de la tarea seleccionada</p>
             </div>
         </div>
@@ -61,7 +217,7 @@
     <a href="/" class="back-link">← Volver a la lista de tareas</a>
 
     <div class="editar-container">
-        <h2>
+        <h2 style="margin: 0 0 25px 0; color: #fff; font-size: 20px; display: flex; align-items: center;">
             Editar Tarea
             <span class="task-id-badge">ID: <span th:text="${tarea.id}">0</span></span>
         </h2>
@@ -103,15 +259,15 @@
 
             <div class="field">
                 <label>Información adicional</label>
-                <div style="padding: 10px; background: rgba(255,255,255,0.02); border-radius: 8px; font-size: 13px; color: #9fb4d4;">
-                    <div>ID: <strong th:text="${tarea.id}">0</strong></div>
+                <div class="info-box">
+                    <div style="margin-bottom: 8px;">ID: <strong th:text="${tarea.id}">0</strong></div>
                     <div>Fecha de creación: <strong th:text="${#temporals.format(tarea.fechaCreacion, 'dd/MM/yyyy HH:mm:ss')}">fecha</strong></div>
                 </div>
             </div>
 
             <div class="form-actions">
                 <button class="btn btn-primary" type="submit">Guardar Cambios</button>
-                <a href="/" class="btn btn-ghost">Cancelar</a>
+                <a href="/" class="btn-ghost">Cancelar</a>
             </div>
         </form>
     </div>

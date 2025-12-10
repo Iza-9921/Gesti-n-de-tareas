@@ -18,11 +18,13 @@ public class controladorTareas {
     private final ServicioTareas servicioTareas;
     private final ServicioUsuario servicioUsuario;
 
+    // Constructor que inyecta los servicios
     public controladorTareas(ServicioTareas servicioTareas, ServicioUsuario servicioUsuario) {
         this.servicioTareas = servicioTareas;
         this.servicioUsuario = servicioUsuario;
     }
 
+    // Metodo para obtener el usuario autenticado
     private Usuario getUsuarioAutenticado() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
@@ -31,11 +33,13 @@ public class controladorTareas {
         return null;
     }
 
+    // Metodo para obtener solo el ID del usuario autenticado
     private Long getUsuarioIdAutenticado() {
         Usuario usuario = getUsuarioAutenticado();
         return usuario != null ? usuario.getId() : null;
     }
 
+    // Pagina principal - lista todas las tareas
     @GetMapping("/")
     public String index(Model model,
                         @RequestParam(value = "mensajeConfirmacion", required = false) String mensajeConfirmacion,
@@ -51,9 +55,11 @@ public class controladorTareas {
         model.addAttribute("usuario", usuario);
 
         try {
+            // Datos para formulario de nueva tarea
             model.addAttribute("tareaNueva", servicioTareas.nuevaTareaVacia(usuarioId));
             model.addAttribute("prioridades", servicioTareas.obtenerPrioridades());
 
+            // Busqueda o mostrar por prioridades
             if (busqueda != null && !busqueda.trim().isEmpty()) {
                 model.addAttribute("busqueda", busqueda);
                 model.addAttribute("resultadosBusqueda", servicioTareas.buscarTareas(busqueda, usuarioId));
@@ -63,26 +69,31 @@ public class controladorTareas {
                 model.addAttribute("tareasBaja", servicioTareas.tareasPorPrioridad(Prioridad.BAJA, usuarioId));
             }
 
+            // Datos de la cola
             model.addAttribute("colaTareas", servicioTareas.obtenerColaComoListaEstandar(usuarioId));
             model.addAttribute("totalEnCola", servicioTareas.totalEnCola(usuarioId));
 
+            // Siguiente tarea en cola
             Tarea siguiente = servicioTareas.verSiguienteEnCola(usuarioId);
             model.addAttribute("siguienteEnCola", siguiente != null ? siguiente.getTitulo() : "—");
 
+            // Historial y estadisticas
             model.addAttribute("pilaHistorial", servicioTareas.obtenerHistorialComoListaEstandar(usuarioId));
             model.addAttribute("estadisticas", servicioTareas.obtenerEstadisticasUsuario(usuarioId));
 
+            // Mensajes de confirmacion o error
             if (mensajeConfirmacion != null) model.addAttribute("mensajeConfirmacion", mensajeConfirmacion);
             if (error != null) model.addAttribute("error", error);
 
             return "index";
 
         } catch (Exception e) {
-            model.addAttribute("error", "Error al cargar la página: " + e.getMessage());
+            model.addAttribute("error", "Error al cargar la pagina: " + e.getMessage());
             return "index";
         }
     }
 
+    // Agregar nueva tarea
     @PostMapping("/agregar")
     public String agregar(@ModelAttribute("tareaNueva") Tarea tarea, RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
@@ -94,6 +105,7 @@ public class controladorTareas {
         return "redirect:/";
     }
 
+    // Encolar una tarea existente
     @PostMapping("/encolar/{id}")
     public String encolar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
@@ -105,6 +117,7 @@ public class controladorTareas {
         return "redirect:/";
     }
 
+    // Desencolar una tarea
     @PostMapping("/desencolar")
     public String desencolar(RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
@@ -112,10 +125,11 @@ public class controladorTareas {
 
         Tarea tarea = servicioTareas.desencolar(usuarioId);
         if (tarea != null) redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea desencolada: " + tarea.getTitulo());
-        else redirectAttributes.addAttribute("error", "La cola está vacía");
+        else redirectAttributes.addAttribute("error", "La cola esta vacia");
         return "redirect:/";
     }
 
+    // Procesar siguiente tarea en cola
     @PostMapping("/procesar")
     public String procesar(RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
@@ -127,6 +141,7 @@ public class controladorTareas {
         return "redirect:/";
     }
 
+    // Completar una tarea
     @PostMapping("/completar/{id}")
     public String completar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
@@ -138,6 +153,7 @@ public class controladorTareas {
         return "redirect:/";
     }
 
+    // Eliminar una tarea
     @PostMapping("/eliminar/{id}")
     public String eliminar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
@@ -149,6 +165,7 @@ public class controladorTareas {
         return "redirect:/";
     }
 
+    // Limpiar historial
     @PostMapping("/limpiarHistorial")
     public String limpiarHistorial(RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
@@ -158,6 +175,7 @@ public class controladorTareas {
         return "redirect:/";
     }
 
+    // Ver perfil de usuario
     @GetMapping("/perfil")
     public String perfil(Model model) {
         Usuario usuario = getUsuarioAutenticado();
@@ -168,6 +186,7 @@ public class controladorTareas {
         return "perfil";
     }
 
+    // Endpoint para datos del panel (AJAX)
     @GetMapping("/panel-data")
     @ResponseBody
     public Map<String, Object> panelData() {
@@ -186,6 +205,7 @@ public class controladorTareas {
         data.put("siguienteEnCola", s != null ? s.getTitulo() : "—");
         data.put("cola", servicioTareas.obtenerColaComoLista(usuarioId));
 
+        // Formatear historial
         List<Map<String, String>> hist = new ArrayList<>();
         for (Historial h : servicioTareas.obtenerHistorial(usuarioId)) {
             Map<String, String> m = new HashMap<>();
@@ -200,16 +220,18 @@ public class controladorTareas {
         return data;
     }
 
+    // Ver tareas ordenadas alfabeticamente
     @GetMapping("/ordenadas-alfabetico")
     public String ordenadasAlfabetico(Model model) {
         Long usuarioId = getUsuarioIdAutenticado();
         if (usuarioId == null) return "redirect:/login";
         model.addAttribute("tareasOrdenadas", servicioTareas.obtenerTareasOrdenadasComoLista(usuarioId));
         model.addAttribute("usuario", getUsuarioAutenticado());
-        model.addAttribute("orden", "Alfabético");
+        model.addAttribute("orden", "Alfabetico");
         return "tareas_ordenadas";
     }
 
+    // Ver visualizacion del arbol
     @GetMapping("/arbol")
     public String mostrarArbol(Model model) {
         Long usuarioId = getUsuarioIdAutenticado();
@@ -218,4 +240,58 @@ public class controladorTareas {
         model.addAttribute("usuario", getUsuarioAutenticado());
         return "arbol_visualizacion";
     }
+
+    // Ver tareas ordenadas por prioridad
+    @GetMapping("/ordenadas")
+    public String mostrarTareasOrdenadasPorPrioridad(Model model) {
+        Long usuarioId = getUsuarioIdAutenticado();
+        if (usuarioId == null) return "redirect:/login";
+
+        // Crear lista combinada de todas las tareas ordenadas por prioridad
+        List<Tarea> tareasOrdenadas = new ArrayList<>();
+
+        // Agregar en orden: ALTA, MEDIA, BAJA
+        tareasOrdenadas.addAll(servicioTareas.tareasPorPrioridad(Prioridad.ALTA, usuarioId));
+        tareasOrdenadas.addAll(servicioTareas.tareasPorPrioridad(Prioridad.MEDIA, usuarioId));
+        tareasOrdenadas.addAll(servicioTareas.tareasPorPrioridad(Prioridad.BAJA, usuarioId));
+
+        model.addAttribute("tareasOrdenadas", tareasOrdenadas);
+        model.addAttribute("usuario", getUsuarioAutenticado());
+        return "tareas_ordenadas";
+    }
+
+    // Mostrar formulario para editar tarea
+    @GetMapping("/editar/{id}")
+    public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
+        Long usuarioId = getUsuarioIdAutenticado();
+        if (usuarioId == null) return "redirect:/login";
+
+        Tarea tarea = servicioTareas.buscarPorId(id, usuarioId);
+        if (tarea == null) {
+            return "redirect:/?error=Tarea no encontrada";
+        }
+
+        model.addAttribute("tarea", tarea);
+        model.addAttribute("prioridades", servicioTareas.obtenerPrioridades());
+        model.addAttribute("usuario", getUsuarioAutenticado());
+        return "editar_tarea";
+    }
+
+    // Actualizar una tarea existente
+    @PostMapping("/editar/{id}")
+    public String actualizarTarea(@PathVariable Long id,
+                                  @ModelAttribute Tarea tareaActualizada,
+                                  RedirectAttributes redirectAttributes) {
+        Long usuarioId = getUsuarioIdAutenticado();
+        if (usuarioId == null) return "redirect:/login";
+
+        Tarea tarea = servicioTareas.actualizarTarea(id, tareaActualizada, usuarioId);
+        if (tarea != null) {
+            redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea actualizada exitosamente");
+        } else {
+            redirectAttributes.addAttribute("error", "No se pudo actualizar la tarea");
+        }
+        return "redirect:/";
+    }
+
 }

@@ -9,6 +9,8 @@ import java.util.*;
 @Service
 public class ServicioTareas {
 
+    // Mapa para almacenar estructuras de datos por usuario
+    // Cada usuario tiene su propio arbol, lista de tareas, cola e historial
     private final Map<Long, ArbolBinarioBusqueda<Tarea>> arbolesPorUsuario = new HashMap<>();
     private final Map<Long, MiListaArreglo<Tarea>> tareasPorUsuario = new HashMap<>();
     private final Map<Long, Cola<Tarea>> colasPorUsuario = new HashMap<>();
@@ -16,15 +18,18 @@ public class ServicioTareas {
 
     private final ServicioUsuario servicioUsuario;
 
+    // Constructor que inyecta el servicio de usuarios e inicializa tareas de ejemplo
     public ServicioTareas(ServicioUsuario servicioUsuario) {
         this.servicioUsuario = servicioUsuario;
         inicializarTareasEjemplo();
     }
 
+    // Inicializa tareas de ejemplo para cada usuario registrado
     private void inicializarTareasEjemplo() {
         List<Usuario> usuarios = servicioUsuario.obtenerTodosUsuarios();
         for (Usuario usuario : usuarios) {
             Long id = usuario.getId();
+            // Crear estructuras de datos para cada usuario
             tareasPorUsuario.put(id, new MiListaArreglo<>());
             colasPorUsuario.put(id, new Cola<>());
             historialesPorUsuario.put(id, new Pila<>());
@@ -33,12 +38,15 @@ public class ServicioTareas {
         }
     }
 
+    // Crea tres tareas de ejemplo (ALTA, MEDIA, BAJA) para un usuario
     private void crearTareasEjemploParaUsuario(Long usuarioId) {
         agregarTarea(new Tarea("Revisar emails", "Revisar correo", Prioridad.ALTA, usuarioId));
         agregarTarea(new Tarea("Preparar informe", "Informe mensual", Prioridad.MEDIA, usuarioId));
         agregarTarea(new Tarea("Organizar archivos", "Ordenar documentos", Prioridad.BAJA, usuarioId));
     }
 
+    // Metodos auxiliares para obtener estructuras de datos de un usuario
+    // Si no existen, las crea
     private MiListaArreglo<Tarea> tareas(Long id) {
         return tareasPorUsuario.computeIfAbsent(id, k -> new MiListaArreglo<>());
     }
@@ -55,17 +63,20 @@ public class ServicioTareas {
         return arbolesPorUsuario.computeIfAbsent(id, k -> new ArbolBinarioBusqueda<>());
     }
 
+    // Agrega una nueva tarea al sistema
     public Tarea agregarTarea(Tarea t) {
         if (t == null) throw new IllegalArgumentException("Tarea null");
         if (t.getUsuarioId() == null) throw new IllegalArgumentException("Tarea sin usuario");
         if (t.getEstado() == null) t.setEstado(Estado.PENDIENTE);
 
+        // Agrega a la lista, al arbol binario y registra en historial
         tareas(t.getUsuarioId()).agregar(t);
         arbol(t.getUsuarioId()).insertar(t);
         historial(t.getUsuarioId()).apilar(new Historial(t.getTitulo(), t.getDescripcion(), "CREADA"));
         return t;
     }
 
+    // Busca una tarea por su ID para un usuario especifico
     public Tarea buscarPorId(Long id, Long usuarioId) {
         if (id == null || usuarioId == null) return null;
         MiListaArreglo<Tarea> lista = tareas(usuarioId);
@@ -76,13 +87,15 @@ public class ServicioTareas {
         return null;
     }
 
+    // Elimina una tarea de la lista de pendientes y del arbol
     private void eliminarDePendientes(Tarea t) {
         if (t == null) return;
         tareas(t.getUsuarioId()).eliminar(t);
-        // eliminar del árbol si existe
+        // eliminar del arbol si existe
         arbol(t.getUsuarioId()).eliminar(t);
     }
 
+    // Marca una tarea como completada
     public boolean completarTarea(Long id, Long usuarioId) {
         Tarea t = buscarPorId(id, usuarioId);
         if (t == null) return false;
@@ -93,6 +106,7 @@ public class ServicioTareas {
         return true;
     }
 
+    // Encola una tarea (la mueve a la cola de procesamiento)
     public boolean encolar(Long id, Long usuarioId) {
         Tarea t = buscarPorId(id, usuarioId);
         if (t == null) return false;
@@ -103,6 +117,7 @@ public class ServicioTareas {
         return true;
     }
 
+    // Desencola una tarea (la saca de la cola y la vuelve a pendientes)
     public Tarea desencolar(Long usuarioId) {
         Tarea t = cola(usuarioId).desencolar();
         if (t == null) return null;
@@ -114,6 +129,7 @@ public class ServicioTareas {
         return t;
     }
 
+    // Procesa la siguiente tarea en cola (la marca como completada)
     public Tarea procesarSiguiente(Long usuarioId) {
         Tarea t = cola(usuarioId).desencolar();
         if (t == null) return null;
@@ -122,6 +138,7 @@ public class ServicioTareas {
         return t;
     }
 
+    // Elimina una tarea completamente del sistema
     public boolean eliminarTarea(Long id, Long usuarioId) {
         Tarea t = buscarPorId(id, usuarioId);
         if (t == null) return false;
@@ -130,6 +147,7 @@ public class ServicioTareas {
         return true;
     }
 
+    // Obtiene todas las tareas de un usuario como List estandar
     public List<Tarea> obtenerTodas(Long usuarioId) {
         List<Tarea> lista = new ArrayList<>();
         MiListaArreglo<Tarea> tareas = tareas(usuarioId);
@@ -139,6 +157,7 @@ public class ServicioTareas {
         return lista;
     }
 
+    // Obtiene la cola de tareas como List estandar
     public List<Tarea> obtenerColaComoLista(Long usuarioId) {
         List<Tarea> lista = new ArrayList<>();
         MiListaArreglo<Tarea> colaLista = cola(usuarioId).comoLista();
@@ -148,6 +167,7 @@ public class ServicioTareas {
         return lista;
     }
 
+    // Obtiene el historial de acciones como List estandar
     public List<Historial> obtenerHistorial(Long usuarioId) {
         List<Historial> lista = new ArrayList<>();
         MiListaArreglo<Historial> pila = historial(usuarioId).comoLista();
@@ -157,14 +177,17 @@ public class ServicioTareas {
         return lista;
     }
 
+    // Muestra la siguiente tarea en cola sin desencolarla
     public Tarea verSiguienteEnCola(Long usuarioId) {
         return cola(usuarioId).verFrente();
     }
 
+    // Obtiene el numero total de tareas en cola
     public int totalEnCola(Long usuarioId) {
         return cola(usuarioId).tamaño();
     }
 
+    // Obtiene tareas ordenadas alfabeticamente usando el arbol binario
     public List<Tarea> obtenerTareasOrdenadasAlfabeticamente(Long usuarioId) {
         MiListaArreglo<Tarea> inOrden = arbol(usuarioId).inOrden();
         List<Tarea> resultado = new ArrayList<>();
@@ -174,17 +197,21 @@ public class ServicioTareas {
         return resultado;
     }
 
-    // Métodos extra usados por el controlador
+    // Metodos extra usados por el controlador
+
+    // Crea una tarea vacia para un usuario
     public Tarea nuevaTareaVacia(Long usuarioId) {
         Tarea t = new Tarea();
         t.setUsuarioId(usuarioId);
         return t;
     }
 
+    // Obtiene todas las prioridades disponibles
     public Prioridad[] obtenerPrioridades() {
         return Prioridad.values();
     }
 
+    // Filtra tareas por prioridad especifica
     public List<Tarea> tareasPorPrioridad(Prioridad prioridad, Long usuarioId) {
         List<Tarea> lista = new ArrayList<>();
         for (Tarea t : obtenerTodas(usuarioId)) {
@@ -193,6 +220,7 @@ public class ServicioTareas {
         return lista;
     }
 
+    // Busca tareas por texto en titulo o descripcion
     public List<Tarea> buscarTareas(String texto, Long usuarioId) {
         if (texto == null || texto.trim().isEmpty()) return obtenerTodas(usuarioId);
         String tbus = texto.toLowerCase();
@@ -204,6 +232,7 @@ public class ServicioTareas {
         return resultados;
     }
 
+    // Actualiza una tarea existente
     public Tarea actualizarTarea(Long id, Tarea nueva, Long usuarioId) {
         Tarea vieja = buscarPorId(id, usuarioId);
         if (vieja == null) return null;
@@ -211,7 +240,7 @@ public class ServicioTareas {
         vieja.setDescripcion(nueva.getDescripcion());
         if (nueva.getPrioridad() != null) vieja.setPrioridad(nueva.getPrioridad());
         if (nueva.getEstado() != null) vieja.setEstado(nueva.getEstado());
-        // reinsertar en árbol para mantener orden si cambió título
+        // reinsertar en arbol para mantener orden si cambio titulo
         arbol(usuarioId).eliminar(vieja);
         arbol(usuarioId).insertar(vieja);
         historial(usuarioId).apilar(new Historial("Tarea actualizada: " + vieja.getTitulo(),
@@ -219,10 +248,12 @@ public class ServicioTareas {
         return vieja;
     }
 
+    // Limpia el historial de un usuario
     public void limpiarHistorial(Long usuarioId) {
         historialesPorUsuario.put(usuarioId, new Pila<>());
     }
 
+    // Obtiene estadisticas de tareas de un usuario
     public Map<String, Integer> obtenerEstadisticasUsuario(Long usuarioId) {
         Map<String, Integer> m = new HashMap<>();
         m.put("total", obtenerTodas(usuarioId).size());
@@ -234,7 +265,7 @@ public class ServicioTareas {
         return m;
     }
 
-    // Aliases y adaptadores
+    // Aliases y adaptadores (metodos que llaman a otros con nombre mas descriptivo)
     public List<Tarea> obtenerColaComoListaEstandar(Long usuarioId) {
         return obtenerColaComoLista(usuarioId);
     }
@@ -247,6 +278,7 @@ public class ServicioTareas {
         return obtenerTareasOrdenadasAlfabeticamente(usuarioId);
     }
 
+    // Obtiene representacion visual del arbol (tabla)
     public String obtenerVisualizacionArbol(Long usuarioId) {
         return arbol(usuarioId).visualizarArbol();
     }

@@ -1,4 +1,4 @@
-package com.example.integradoravirna.estructuras;
+/*package com.example.integradoravirna.estructuras;
 
 public class ArbolBinario<T> {
     private NodoArbol<T> raiz;
@@ -54,3 +54,4 @@ public class ArbolBinario<T> {
         }
     }
 }
+*/

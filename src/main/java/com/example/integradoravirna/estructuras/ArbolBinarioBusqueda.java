@@ -133,8 +133,4 @@ public class ArbolBinarioBusqueda<T extends Comparable<T>> {
         return current;
     }
 
-    // Alias para compatibilidad
-    public String visualizar() {
-        return visualizarArbol();
-    }
 }

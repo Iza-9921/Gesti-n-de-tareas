@@ -6,8 +6,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Tarea implements Comparable<Tarea> {
 
+    // Generador de IDs unicos para las tareas
     private static final AtomicLong GENERADOR_ID = new AtomicLong(1);
 
+    // Atributos de la tarea
     private Long id;
     private String titulo;
     private String descripcion;
@@ -16,31 +18,40 @@ public class Tarea implements Comparable<Tarea> {
     private LocalDateTime fechaCreacion;
     private Long usuarioId;
 
+    // Constructor vacio
     public Tarea() {
-        this.id = GENERADOR_ID.getAndIncrement();
-        this.estado = Estado.PENDIENTE;
-        this.fechaCreacion = LocalDateTime.now();
+        this.id = GENERADOR_ID.getAndIncrement(); // Asigna ID autoincremental
+        this.estado = Estado.PENDIENTE;           // Estado por defecto
+        this.fechaCreacion = LocalDateTime.now(); // Fecha actual
     }
 
+    // Constructor con parametros principales
     public Tarea(String titulo, String descripcion, Prioridad prioridad, Long usuarioId) {
-        this();
+        this(); // Llama al constructor vacio
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.prioridad = prioridad;
         this.usuarioId = usuarioId;
     }
 
+    // Metodo para comparar tareas (para ordenamiento)
+    // Opción 1: Modificar Tarea.compareTo()
+    //tabla
     @Override
     public int compareTo(Tarea otra) {
-        if (otra == null) return 1;
-        if (this.titulo == null && otra.titulo == null) return this.id.compareTo(otra.id);
+        // Primero por prioridad (ALTA > MEDIA > BAJA)
+        if (this.prioridad != otra.prioridad) {
+            return otra.prioridad.compareTo(this.prioridad); // Orden descendente
+        }
+        // Luego alfabético
+        if (this.titulo == null && otra.titulo == null) return 0;
         if (this.titulo == null) return -1;
         if (otra.titulo == null) return 1;
-        int comp = this.titulo.compareToIgnoreCase(otra.titulo);
-        if (comp != 0) return comp;
-        return this.id.compareTo(otra.id);
+        return this.titulo.compareToIgnoreCase(otra.titulo);
     }
 
+
+    // Compara tareas por su ID
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -49,6 +60,7 @@ public class Tarea implements Comparable<Tarea> {
         return Objects.equals(id, tarea.id);
     }
 
+    // Hash basado en el ID
     @Override
     public int hashCode() {
         return Objects.hash(id);
@@ -76,6 +88,7 @@ public class Tarea implements Comparable<Tarea> {
     public Long getUsuarioId() { return usuarioId; }
     public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
 
+    // Representacion en texto de la tarea
     @Override
     public String toString() {
         return "Tarea{" +
