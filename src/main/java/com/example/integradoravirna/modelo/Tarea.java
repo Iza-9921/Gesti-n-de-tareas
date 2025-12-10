@@ -14,7 +14,7 @@ public class Tarea implements Comparable<Tarea> {
     private Prioridad prioridad;
     private Estado estado;
     private LocalDateTime fechaCreacion;
-    private Long usuarioId; // ID del usuario dueño de la tarea
+    private Long usuarioId;
 
     public Tarea() {
         this.id = GENERADOR_ID.getAndIncrement();
@@ -30,22 +30,17 @@ public class Tarea implements Comparable<Tarea> {
         this.usuarioId = usuarioId;
     }
 
-    // En Tarea.java, asegúrate que compareTo funcione bien para el árbol
     @Override
     public int compareTo(Tarea otra) {
-        // Comparar por título primero (para el árbol alfabético)
-        int compTitulo = this.titulo.compareToIgnoreCase(otra.titulo);
-        if (compTitulo != 0) return compTitulo;
-
-        // Si títulos iguales, comparar por prioridad
-        int compPrioridad = this.prioridad.ordinal() - otra.prioridad.ordinal();
-        if (compPrioridad != 0) return compPrioridad;
-
-        // Si todo igual, comparar por ID
+        if (otra == null) return 1;
+        if (this.titulo == null && otra.titulo == null) return this.id.compareTo(otra.id);
+        if (this.titulo == null) return -1;
+        if (otra.titulo == null) return 1;
+        int comp = this.titulo.compareToIgnoreCase(otra.titulo);
+        if (comp != 0) return comp;
         return this.id.compareTo(otra.id);
     }
 
-    // También necesitas equals y hashCode consistentes
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

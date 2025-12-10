@@ -10,6 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.*;
+
 @Controller
 public class controladorTareas {
 
@@ -23,7 +25,7 @@ public class controladorTareas {
 
     private Usuario getUsuarioAutenticado() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
             return servicioUsuario.getUsuarioAutenticado(auth.getName());
         }
         return null;
@@ -48,215 +50,109 @@ public class controladorTareas {
         Usuario usuario = getUsuarioAutenticado();
         model.addAttribute("usuario", usuario);
 
-        System.out.println("=== CARGANDO PÁGINA PRINCIPAL PARA USUARIO ID: " + usuarioId + " ===");
-
         try {
-            // 1. Tarea vacía para el formulario
             model.addAttribute("tareaNueva", servicioTareas.nuevaTareaVacia(usuarioId));
             model.addAttribute("prioridades", servicioTareas.obtenerPrioridades());
 
-            // 2. Si hay búsqueda, mostrar resultados filtrados
             if (busqueda != null && !busqueda.trim().isEmpty()) {
                 model.addAttribute("busqueda", busqueda);
                 model.addAttribute("resultadosBusqueda", servicioTareas.buscarTareas(busqueda, usuarioId));
             } else {
-                // Tareas por prioridad (normales)
                 model.addAttribute("tareasAlta", servicioTareas.tareasPorPrioridad(Prioridad.ALTA, usuarioId));
                 model.addAttribute("tareasMedia", servicioTareas.tareasPorPrioridad(Prioridad.MEDIA, usuarioId));
                 model.addAttribute("tareasBaja", servicioTareas.tareasPorPrioridad(Prioridad.BAJA, usuarioId));
             }
 
-            // 3. Cola de procesamiento
-            model.addAttribute("colaTareas", servicioTareas.obtenerColaComoListaEstándar(usuarioId));
+            model.addAttribute("colaTareas", servicioTareas.obtenerColaComoListaEstandar(usuarioId));
             model.addAttribute("totalEnCola", servicioTareas.totalEnCola(usuarioId));
 
-            // 4. Siguiente en cola
             Tarea siguiente = servicioTareas.verSiguienteEnCola(usuarioId);
             model.addAttribute("siguienteEnCola", siguiente != null ? siguiente.getTitulo() : "—");
 
-            // 5. Historial
-            model.addAttribute("pilaHistorial", servicioTareas.obtenerHistorialComoListaEstándar(usuarioId));
-
-            // 6. Estadísticas del usuario
+            model.addAttribute("pilaHistorial", servicioTareas.obtenerHistorialComoListaEstandar(usuarioId));
             model.addAttribute("estadisticas", servicioTareas.obtenerEstadisticasUsuario(usuarioId));
 
-            // 7. Mensajes flash
-            if (mensajeConfirmacion != null) {
-                model.addAttribute("mensajeConfirmacion", mensajeConfirmacion);
-            }
-            if (error != null) {
-                model.addAttribute("error", error);
-            }
+            if (mensajeConfirmacion != null) model.addAttribute("mensajeConfirmacion", mensajeConfirmacion);
+            if (error != null) model.addAttribute("error", error);
 
-            System.out.println("✓ Página cargada exitosamente para usuario ID: " + usuarioId);
             return "index";
 
         } catch (Exception e) {
-            System.err.println("✗ ERROR en index(): " + e.getMessage());
-            e.printStackTrace();
             model.addAttribute("error", "Error al cargar la página: " + e.getMessage());
             return "index";
         }
     }
 
-    @GetMapping("/editar/{id}")
-    public String mostrarFormularioEdicion(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
-
-        Tarea tarea = servicioTareas.buscarPorId(id, usuarioId);
-        if (tarea == null) {
-            redirectAttributes.addAttribute("error", "Tarea no encontrada");
-            return "redirect:/";
-        }
-
-        model.addAttribute("tarea", tarea);
-        model.addAttribute("prioridades", servicioTareas.obtenerPrioridades());
-        model.addAttribute("usuario", getUsuarioAutenticado());
-        return "editar_tarea";
-    }
-
-    @PostMapping("/editar/{id}")
-    public String actualizarTarea(@PathVariable Long id,
-                                  @ModelAttribute Tarea tareaActualizada,
-                                  RedirectAttributes redirectAttributes) {
-        Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            Tarea tarea = servicioTareas.actualizarTarea(id, tareaActualizada, usuarioId);
-            if (tarea != null) {
-                redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea actualizada exitosamente");
-            } else {
-                redirectAttributes.addAttribute("error", "No se pudo actualizar la tarea");
-            }
-        } catch (Exception e) {
-            redirectAttributes.addAttribute("error", "Error al actualizar: " + e.getMessage());
-        }
-        return "redirect:/";
-    }
-
-    @GetMapping("/ordenadas")
-    public String ordenadas(Model model) {
-        Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
-
-        model.addAttribute("tareasOrdenadas", servicioTareas.obtenerTareasOrdenadasComoLista(usuarioId));
-        model.addAttribute("usuario", getUsuarioAutenticado());
-        return "tareas_ordenadas";
-    }
-
     @PostMapping("/agregar")
-    public String agregar(@ModelAttribute("tareaNueva") Tarea tarea,
-                          RedirectAttributes redirectAttributes) {
+    public String agregar(@ModelAttribute("tareaNueva") Tarea tarea, RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
+        if (usuarioId == null) return "redirect:/login";
 
-        try {
-            tarea.setUsuarioId(usuarioId); // Asegurar que la tarea pertenece al usuario
-            servicioTareas.agregarTarea(tarea);
-            redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea agregada correctamente");
-        } catch (Exception e) {
-            redirectAttributes.addAttribute("error", "Error al agregar tarea: " + e.getMessage());
-        }
+        tarea.setUsuarioId(usuarioId);
+        servicioTareas.agregarTarea(tarea);
+        redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea agregada correctamente");
         return "redirect:/";
     }
 
     @PostMapping("/encolar/{id}")
     public String encolar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
+        if (usuarioId == null) return "redirect:/login";
 
         boolean success = servicioTareas.encolar(id, usuarioId);
-        if (success) {
-            redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea encolada exitosamente");
-        } else {
-            redirectAttributes.addAttribute("error", "No se pudo encolar la tarea");
-        }
+        if (success) redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea encolada exitosamente");
+        else redirectAttributes.addAttribute("error", "No se pudo encolar la tarea");
         return "redirect:/";
     }
 
     @PostMapping("/desencolar")
     public String desencolar(RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
+        if (usuarioId == null) return "redirect:/login";
 
         Tarea tarea = servicioTareas.desencolar(usuarioId);
-        if (tarea != null) {
-            redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea desencolada: " + tarea.getTitulo());
-        } else {
-            redirectAttributes.addAttribute("error", "La cola está vacía");
-        }
+        if (tarea != null) redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea desencolada: " + tarea.getTitulo());
+        else redirectAttributes.addAttribute("error", "La cola está vacía");
         return "redirect:/";
     }
 
     @PostMapping("/procesar")
     public String procesar(RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
+        if (usuarioId == null) return "redirect:/login";
 
         Tarea tarea = servicioTareas.procesarSiguiente(usuarioId);
-        if (tarea != null) {
-            redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea procesada: " + tarea.getTitulo());
-        } else {
-            redirectAttributes.addAttribute("error", "No hay tareas para procesar");
-        }
+        if (tarea != null) redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea procesada: " + tarea.getTitulo());
+        else redirectAttributes.addAttribute("error", "No hay tareas para procesar");
         return "redirect:/";
     }
 
     @PostMapping("/completar/{id}")
     public String completar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
+        if (usuarioId == null) return "redirect:/login";
 
         boolean success = servicioTareas.completarTarea(id, usuarioId);
-        if (success) {
-            redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea marcada como completada");
-        } else {
-            redirectAttributes.addAttribute("error", "No se pudo completar la tarea");
-        }
+        if (success) redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea marcada como completada");
+        else redirectAttributes.addAttribute("error", "No se pudo completar la tarea");
         return "redirect:/";
     }
 
     @PostMapping("/eliminar/{id}")
     public String eliminar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
+        if (usuarioId == null) return "redirect:/login";
 
         boolean success = servicioTareas.eliminarTarea(id, usuarioId);
-        if (success) {
-            redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea eliminada exitosamente");
-        } else {
-            redirectAttributes.addAttribute("error", "No se pudo eliminar la tarea");
-        }
+        if (success) redirectAttributes.addAttribute("mensajeConfirmacion", "Tarea eliminada exitosamente");
+        else redirectAttributes.addAttribute("error", "No se pudo eliminar la tarea");
         return "redirect:/";
     }
 
     @PostMapping("/limpiarHistorial")
     public String limpiarHistorial(RedirectAttributes redirectAttributes) {
         Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
-
+        if (usuarioId == null) return "redirect:/login";
         servicioTareas.limpiarHistorial(usuarioId);
         redirectAttributes.addAttribute("mensajeConfirmacion", "Historial limpiado exitosamente");
         return "redirect:/";
@@ -265,41 +161,59 @@ public class controladorTareas {
     @GetMapping("/perfil")
     public String perfil(Model model) {
         Usuario usuario = getUsuarioAutenticado();
-        if (usuario == null) {
-            return "redirect:/login";
-        }
-
+        if (usuario == null) return "redirect:/login";
         Long usuarioId = usuario.getId();
         model.addAttribute("usuario", usuario);
         model.addAttribute("estadisticas", servicioTareas.obtenerEstadisticasUsuario(usuarioId));
         return "perfil";
     }
 
-    @GetMapping("/health")
+    @GetMapping("/panel-data")
     @ResponseBody
-    public String health() {
-        return "✅ APLICACIÓN FUNCIONANDO - " + java.time.LocalDateTime.now();
+    public Map<String, Object> panelData() {
+        Map<String, Object> data = new HashMap<>();
+        Long usuarioId = getUsuarioIdAutenticado();
+        if (usuarioId == null) {
+            data.put("totalEnCola", 0);
+            data.put("siguienteEnCola", "—");
+            data.put("cola", Collections.emptyList());
+            data.put("historial", Collections.emptyList());
+            return data;
+        }
+
+        data.put("totalEnCola", servicioTareas.totalEnCola(usuarioId));
+        Tarea s = servicioTareas.verSiguienteEnCola(usuarioId);
+        data.put("siguienteEnCola", s != null ? s.getTitulo() : "—");
+        data.put("cola", servicioTareas.obtenerColaComoLista(usuarioId));
+
+        List<Map<String, String>> hist = new ArrayList<>();
+        for (Historial h : servicioTareas.obtenerHistorial(usuarioId)) {
+            Map<String, String> m = new HashMap<>();
+            m.put("hora", h.getFecha() != null ? h.getFecha().toLocalTime().toString().substring(0,5) : "--:--");
+            m.put("titulo", h.getTitulo());
+            m.put("accion", h.getAccion());
+            m.put("descripcion", h.getDescripcion());
+            hist.add(m);
+        }
+        data.put("historial", hist);
+
+        return data;
     }
-    // En controladorTareas.java
+
     @GetMapping("/ordenadas-alfabetico")
     public String ordenadasAlfabetico(Model model) {
         Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
-
-        model.addAttribute("tareasOrdenadas", servicioTareas.obtenerTareasOrdenadasAlfabeticamente(usuarioId));
+        if (usuarioId == null) return "redirect:/login";
+        model.addAttribute("tareasOrdenadas", servicioTareas.obtenerTareasOrdenadasComoLista(usuarioId));
         model.addAttribute("usuario", getUsuarioAutenticado());
         model.addAttribute("orden", "Alfabético");
-        return "tareas_ordenadas"; // Puedes reusar el mismo template
+        return "tareas_ordenadas";
     }
+
     @GetMapping("/arbol")
     public String mostrarArbol(Model model) {
         Long usuarioId = getUsuarioIdAutenticado();
-        if (usuarioId == null) {
-            return "redirect:/login";
-        }
-
+        if (usuarioId == null) return "redirect:/login";
         model.addAttribute("visualizacionArbol", servicioTareas.obtenerVisualizacionArbol(usuarioId));
         model.addAttribute("usuario", getUsuarioAutenticado());
         return "arbol_visualizacion";

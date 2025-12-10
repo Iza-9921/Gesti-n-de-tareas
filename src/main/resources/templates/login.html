@@ -5,81 +5,6 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Iniciar Sesión — Sistema de Tareas</title>
     <link rel="stylesheet" th:href="@{/css/estilos.css}" href="/css/estilos.css" />
-    <style>
-        .auth-container {
-            max-width: 400px;
-            margin: 80px auto;
-            padding: 40px;
-            border-radius: 16px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-            border: 1px solid rgba(255,255,255,0.04);
-            box-shadow: 0 20px 80px rgba(2,6,23,0.4);
-        }
-        .auth-logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .auth-logo svg {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 15px;
-        }
-        .auth-title {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #e6eef8;
-            font-weight: 500;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        .auth-links {
-            text-align: center;
-            margin-top: 25px;
-            color: #9fb4d4;
-        }
-        .auth-links a {
-            color: #3b82f6;
-            text-decoration: none;
-        }
-        .auth-links a:hover {
-            text-decoration: underline;
-        }
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            color: #22c55e;
-        }
-        .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-        }
-    </style>
 </head>
 <body>
 <div class="wrap">
@@ -97,7 +22,6 @@
             <p class="muted">Ingresa tus credenciales para continuar</p>
         </div>
 
-        <!-- Mensajes -->
         <div th:if="${mensaje}" class="alert alert-success" role="alert">
             <span th:text="${mensaje}">Mensaje</span>
         </div>
@@ -119,11 +43,6 @@
 
         <div class="auth-links">
             <p>¿No tienes una cuenta? <a th:href="@{/registro}">Regístrate aquí</a></p>
-            <p style="margin-top: 10px; font-size: 13px;" class="muted">
-                Usuarios de prueba:<br>
-                juan@ejemplo.com / password123<br>
-                maria@ejemplo.com / password123
-            </p>
         </div>
     </div>
 </div>

@@ -59,12 +59,10 @@ public class ArbolBinarioBusqueda<T extends Comparable<T>> {
 
     public String visualizarArbol() {
         if (raiz == null) {
-            return "🌳 Árbol vacío - No hay tareas";
+            return "Árbol vacío - No hay tareas";
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("🌳 ÁRBOL BINARIO DE BÚSQUEDA 🌳\n");
-        sb.append("═".repeat(40)).append("\n\n");
         visualizarRec(raiz, "", true, sb);
         return sb.toString();
     }
@@ -77,27 +75,66 @@ public class ArbolBinarioBusqueda<T extends Comparable<T>> {
 
             String nuevoPrefijo = prefijo + (esUltimo ? "    " : "│   ");
 
-            // Primero mostrar el hijo derecho (para mejor visualización)
             if (nodo.getDerecho() != null || nodo.getIzquierdo() != null) {
                 if (nodo.getDerecho() != null) {
                     visualizarRec(nodo.getDerecho(), nuevoPrefijo, false, sb);
                 } else {
-                    // Mostrar null si no hay hijo derecho
                     sb.append(nuevoPrefijo).append("├── [NULL]\n");
                 }
 
                 if (nodo.getIzquierdo() != null) {
                     visualizarRec(nodo.getIzquierdo(), nuevoPrefijo, true, sb);
                 } else {
-                    // Mostrar null si no hay hijo izquierdo
                     sb.append(nuevoPrefijo).append("└── [NULL]\n");
                 }
             }
         }
     }
 
-    // Método adicional para ver si el árbol está vacío
     public boolean estaVacio() {
         return raiz == null;
+    }
+
+    // Eliminación de un valor en el BST
+    public void eliminar(T valor) {
+        raiz = eliminarRec(raiz, valor);
+    }
+
+    private NodoArbol<T> eliminarRec(NodoArbol<T> nodo, T valor) {
+        if (nodo == null) return null;
+
+        if (valor.compareTo(nodo.getValor()) < 0) {
+            nodo.setIzquierdo(eliminarRec(nodo.getIzquierdo(), valor));
+        } else if (valor.compareTo(nodo.getValor()) > 0) {
+            nodo.setDerecho(eliminarRec(nodo.getDerecho(), valor));
+        } else {
+            // encontrado
+            if (nodo.getIzquierdo() == null && nodo.getDerecho() == null) {
+                return null;
+            }
+            if (nodo.getIzquierdo() == null) {
+                return nodo.getDerecho();
+            }
+            if (nodo.getDerecho() == null) {
+                return nodo.getIzquierdo();
+            }
+            NodoArbol<T> sucesor = obtenerMinimo(nodo.getDerecho());
+            nodo.setValor(sucesor.getValor());
+            nodo.setDerecho(eliminarRec(nodo.getDerecho(), sucesor.getValor()));
+        }
+        return nodo;
+    }
+
+    private NodoArbol<T> obtenerMinimo(NodoArbol<T> nodo) {
+        NodoArbol<T> current = nodo;
+        while (current.getIzquierdo() != null) {
+            current = current.getIzquierdo();
+        }
+        return current;
+    }
+
+    // Alias para compatibilidad
+    public String visualizar() {
+        return visualizarArbol();
     }
 }
